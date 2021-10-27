@@ -1,0 +1,2 @@
+load("/Users/davidrios/Documents/R-home/PLGG/02_data/AEdig.RDS")
+readRDS("/Users/davidrios/Documents/R-home/PLGG/02_data/AEdig.RDS")
