@@ -114,4 +114,5 @@ tidyr
 dfoptim
 stringr 
 matrixStats
+mvtnorm
 ```
