@@ -48,7 +48,7 @@ To run the cost-effectiveness model go to `Cost-effectiveness_basecase.R` and ru
 This project contains the following files
 
 ```
-01_data: not included in this repository. 
+01_data_raw: not included in this repository. 
 
 02_data: data
   |- Utilities_CochranSE.csv: Utility estimates and coefficients 
