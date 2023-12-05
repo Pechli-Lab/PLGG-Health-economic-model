@@ -96,21 +96,13 @@ SurvProbFun <- function(object, t , cycle1){
 
 # rows 1,3,5,7,9 are associated with Fusion == 0
 
-Probs.plggWT <- function(t_instate,StateIndx, Cycle1, FlexSurvRes, inter, tt, trt_dur){
+Probs.plggWT <- function(t_instate,StateIndx, Cycle1, FlexSurvRes ){
   # Inputs
   # t_instate: time in current state, a vector
   # StateIndx: what state are they in
   # Cycle1: cycle length
   # Outputs probability natrix
   # Probability matrix which i'll return
-  
-  if (inter == "Targeted") {
-    arm <- 2  
-  } else if (inter == "SoC") {
-    arm <- 11 
-  }
-  if (trt_dur == 2 & tt > 24) {arm <- 11} # treatment effect lasts for 2 years, goes back to SoC 
-  
   Prob.mat <-  matrix(nrow = length(t_instate), ncol = 4,data = 0)
   
   # If any state is equal to the first state uses the SurvProbFun 
@@ -119,8 +111,8 @@ Probs.plggWT <- function(t_instate,StateIndx, Cycle1, FlexSurvRes, inter, tt, tr
 
   if(any(StateIndx ==  "pre_prog")){
     state1.log <- StateIndx ==  "pre_prog"
-    Prob.mat[state1.log,2] <- SurvProbFun(object = FlexSurvRes$flexobj[[arm]][[1]], t = t_instate[state1.log], cycle1 = Cycle1)
-    Prob.mat[state1.log,4] <- SurvProbFun(object = FlexSurvRes$flexobj[[3]][[1]],   t = t_instate[state1.log], cycle1 = Cycle1)
+    Prob.mat[state1.log,2] <- SurvProbFun(object = FlexSurvRes$flexobj[[1]][[1]], t = t_instate[state1.log], cycle1 = Cycle1)
+    Prob.mat[state1.log,4] <- SurvProbFun(object = FlexSurvRes$flexobj[[3]][[1]], t = t_instate[state1.log], cycle1 = Cycle1)
   }
   
   if(any(StateIndx ==   "prog1")){
@@ -138,25 +130,25 @@ Probs.plggWT <- function(t_instate,StateIndx, Cycle1, FlexSurvRes, inter, tt, tr
 }
 
 # This is exact same structure as above only differencce is indexing in FlexSurvRes
-# Probs.plggFused <- function(t_instate,StateIndx, Cycle1,FlexSurvRes ){
-#   Prob.mat <-  matrix(nrow = length(t_instate), ncol = 4,data = 0)
-#   if(any(StateIndx == "pre_prog")){
-#     state1.log <- StateIndx == "pre_prog"
-#     Prob.mat[state1.log,2] <- SurvProbFun(object = FlexSurvRes$flexobj[[2]][[1]], t = t_instate[state1.log], cycle1 = Cycle1)
-#     Prob.mat[state1.log,4] <- SurvProbFun(object = FlexSurvRes$flexobj[[4]][[1]], t = t_instate[state1.log], cycle1 = Cycle1)
-#   }
-#   if(any(StateIndx == "prog1")){
-#     state2.log <- StateIndx == "prog1"
-#     Prob.mat[state2.log,3] <- SurvProbFun(object = FlexSurvRes$flexobj[[6]][[1]], t = t_instate[state2.log], cycle1 = Cycle1)
-#     Prob.mat[state2.log,4] <- SurvProbFun(object = FlexSurvRes$flexobj[[8]][[1]], t = t_instate[state2.log], cycle1 = Cycle1)
-#   }
-#   if(any(StateIndx == "prog2")){
-#     state3.log <- StateIndx == "prog2"
-#     Prob.mat[state3.log,4] <- SurvProbFun(object = FlexSurvRes$flexobj[[10]][[1]], t = t_instate[state3.log], cycle1 = Cycle1)
-#   }
-#   
-#   return(Prob.mat)
-# }
+Probs.plggFused <- function(t_instate,StateIndx, Cycle1,FlexSurvRes ){
+  Prob.mat <-  matrix(nrow = length(t_instate), ncol = 4,data = 0)
+  if(any(StateIndx == "pre_prog")){
+    state1.log <- StateIndx == "pre_prog"
+    Prob.mat[state1.log,2] <- SurvProbFun(object = FlexSurvRes$flexobj[[2]][[1]], t = t_instate[state1.log], cycle1 = Cycle1)
+    Prob.mat[state1.log,4] <- SurvProbFun(object = FlexSurvRes$flexobj[[4]][[1]], t = t_instate[state1.log], cycle1 = Cycle1)
+  }
+  if(any(StateIndx == "prog1")){
+    state2.log <- StateIndx == "prog1"
+    Prob.mat[state2.log,3] <- SurvProbFun(object = FlexSurvRes$flexobj[[6]][[1]], t = t_instate[state2.log], cycle1 = Cycle1)
+    Prob.mat[state2.log,4] <- SurvProbFun(object = FlexSurvRes$flexobj[[8]][[1]], t = t_instate[state2.log], cycle1 = Cycle1)
+  }
+  if(any(StateIndx == "prog2")){
+    state3.log <- StateIndx == "prog2"
+    Prob.mat[state3.log,4] <- SurvProbFun(object = FlexSurvRes$flexobj[[10]][[1]], t = t_instate[state3.log], cycle1 = Cycle1)
+  }
+  
+  return(Prob.mat)
+}
 
 ## fun_index is a function that takes an input as time from an event and returns the index 
 # of what time that would be assocaited with if the data frame started from 0 and went up by 

@@ -1,6 +1,6 @@
 Microsimulation <- function(n.i, n.y, cyc.t, monitor,seed_n, df_char,Estimated_plgg,
                             Estimated_ae,AE_outside_mat,PrMortCardio_mat, SRS_mat1, cost_input,
-                            util_input,uindx, rad_benefit, d.c,d.e,sim_numi, rri, loc_out1, trt_duration ){
+                            util_input,uindx, rad_benefit, d.c,d.e,sim_numi, rri, loc_out1 ){
   # input:  
   # n.i: number of individuals
   # n.y: time horizon
@@ -13,7 +13,6 @@ Microsimulation <- function(n.i, n.y, cyc.t, monitor,seed_n, df_char,Estimated_p
   # AE_outside_mat: output from AE_outside_pr
   # PrMortCardio_mat: output from MortCardio_est
   # SRS_mat1: output from SRS_gen
-  # trt_duration: 1 = lifetime; 2 = 2 years
   # output: 
   # list of model run outcomes with the same parameters but varying intervention
   
@@ -56,14 +55,14 @@ Microsimulation <- function(n.i, n.y, cyc.t, monitor,seed_n, df_char,Estimated_p
   
   
   
-  for( intervention in c("Targeted","SoC")){  
+  for( intervention in c("Rad_Fused","Norad_Fused")){  
     
     # Assinging a logical to whether fused patients can be radiated  
-    # if(intervention == "Rad_Fused"){
-    #   FusedNoRad <- FALSE
-    # } else {
-    #   FusedNoRad <- TRUE
-    # }
+    if(intervention == "Rad_Fused"){
+      FusedNoRad <- FALSE
+    } else {
+      FusedNoRad <- TRUE
+    }
     
     # Reseeting radiation account
     
@@ -71,12 +70,10 @@ Microsimulation <- function(n.i, n.y, cyc.t, monitor,seed_n, df_char,Estimated_p
     
     # 2. Initializing Values -----       
     #   m.Utilities (utilities) and m.Costs.plgg, m.Costs.ae
-    m.Utilities <- m.Costs.ae <-  m.Costs.plgg <- m.Costs.trt <- matrix(nrow = n.i, 
-                                                                        ncol = n.t +1,
-                                                                        dimnames = list(paste("ind", 1:n.i, sep = " "), 
-                                                                        paste( 0:n.t)),data = 0)
-    m.Costs.rad <- m.Costs.trt
-    
+    m.Utilities <- m.Costs.ae <-  m.Costs.plgg <- matrix(nrow = n.i, 
+                                                         ncol = n.t +1,
+                                                         dimnames = list(paste("ind", 1:n.i, sep = " "), 
+                                                                         paste( 0:n.t)),data = 0)
     # m.M (state tracking)
     m.M <- matrix(nrow = n.i, 
                   ncol = n.t +1,
@@ -109,20 +106,15 @@ Microsimulation <- function(n.i, n.y, cyc.t, monitor,seed_n, df_char,Estimated_p
     m.Vis[,1] <-  T
     
     ## First cylce costs
-    m.Costs.plgg[,1]  <- Costs_plgg(Inpatient_Costs  = Inpatient_Costs.l,
-                                    Outpatient_costs = Outpatient_costs.l,
-                                    m_Dur            = m.Dur,
-                                    curent_age_v     = curent_age) 
-    if (intervention == "Targeted") { 
-      m.Costs.trt[,1] <- Costs_trt.l$Targeted
-    }
+    m.Costs.plgg[,1]  <- Costs_plgg(Inpatient_Costs = Inpatient_Costs.l,
+                                    Outpatient_costs = Outpatient_costs.l,m_Dur = m.Dur,curent_age_v = curent_age) 
     
     # Utilities first cycle
     m.Utilities[,1] <- Effects(lst.Util = util_input,cur_age_v = curent_age,m_V = m.Vis)
     
     
     # If testing (Noread_fused) don't radiate 
-    if(intervention == "SoC"){
+    if(intervention == "Norad_Fused"){
       m.Costs.plgg[,1]   <- m.Costs.plgg[,1]   +  Costs_testing.l$Nanostring
     }
     
@@ -134,31 +126,11 @@ Microsimulation <- function(n.i, n.y, cyc.t, monitor,seed_n, df_char,Estimated_p
     for (t in 1:n.t) {  # for t in 1 number of cycles
       #if(t == 100){debug(Probs)}
       # if(any(m.Vis[,2] & df_char$Radiation == 1)){debug(Probs)}
-      
-      ### Move those after 2nd prog to rad and stop chemo/targeted
-      # rad_switch <- m.M[,t] == "prog2"
-      # RadIndc <- rad_switch & df_char$Radiation == 0 # indicated for Rad switch and never incurred Rad cost
-      # #Cost of radiation incurred at the switch to rad
-      # m.Costs.rad[RadIndc, t + 1] <- 7199.34 # value given by Petros on Teams
-      # df_char$Radiation[rad_switch] <- 1
-      
       # Create m.p: transition matrices for next period  
-      m.p <- Probs(M_it              = m.M[,t], 
-                   D_m               = m.Dur, 
-                   df.i              = df_char, 
-                   Vis_m             = m.Vis ,
-                   CycleLength       = cyc.t,
-                   GlobT             = v.time[t], 
-                   EstPLGG           = Estimated_plgg ,
-                   EstAE             = Estimated_ae,
-                   AE_outside_mat1   = AE_outside_mat,
-                   PrMortCardio_mat1 = PrMortCardio_mat,
-                   rad_benefit1      = rad_benefit,
-                   SRS_mat           = SRS_mat1,
-                   curent_age_v      = curent_age,
-                   inter             = intervention,
-                   tt                = t,
-                   trt_dur           = trt_duration)
+      m.p <- Probs(M_it = m.M[,t], D_m = m.Dur, df.i = df_char, Vis_m = m.Vis ,CycleLength = cyc.t,
+                   GlobT = v.time[t], EstPLGG = Estimated_plgg ,EstAE = Estimated_ae,
+                   AE_outside_mat1 = AE_outside_mat,PrMortCardio_mat1 = PrMortCardio_mat,rad_benefit1 = rad_benefit,
+                   SRS_mat = SRS_mat1,curent_age_v = curent_age)
       
       # if(t == 100){undebug(Probs)}
       
@@ -180,28 +152,27 @@ Microsimulation <- function(n.i, n.y, cyc.t, monitor,seed_n, df_char,Estimated_p
       }
       
       # Creating radiation decision for those that progress
-      # RadDec.patients <-m.M[, t + 1] == "prog1" & m.M[, t] != "prog1"
-      # 
-      # if(any(RadDec.patients)){
-      #   if(FusedNoRad){ # Which intervention 
-      #     
-      #     AgeLog   <-  curent_age[RadDec.patients]   > 8
-      #     FusionLog <- df_char[RadDec.patients,"Fusion"] == 0     
-      #     df_char$Radiation[RadDec.patients][AgeLog & FusionLog] <-  1 
-      #     
-      #   } else if (!FusedNoRad){
-      #     
-      #     AgeLog   <- curent_age[RadDec.patients] > 8
-      #     df_char$Radiation[RadDec.patients][AgeLog] <-  1    
-      #     
-      #   }
+      RadDec.patients <-m.M[, t + 1] == "prog1" & m.M[, t] != "prog1"
+      
+      if(any(RadDec.patients)){
+        if(FusedNoRad){ # Which intervention 
+          
+          AgeLog   <-  curent_age[RadDec.patients]   > 8
+          FusionLog <- df_char[RadDec.patients,"Fusion"] == 0     
+          df_char$Radiation[RadDec.patients][AgeLog & FusionLog] <-  1 
+          
+        } else if (!FusedNoRad){
+          
+          AgeLog   <- curent_age[RadDec.patients] > 8
+          df_char$Radiation[RadDec.patients][AgeLog] <-  1    
+          
+        }
         
         
         ## Costs treatment        
-        m.Costs.plgg[, t +1 ] <- Costs_plgg(Inpatient_Costs  = Inpatient_Costs.l,
+        m.Costs.plgg[, t +1 ] <- Costs_plgg(Inpatient_Costs = Inpatient_Costs.l,
                                             Outpatient_costs = Outpatient_costs.l,
-                                            m_Dur            = m.Dur,
-                                            curent_age_v     = curent_age)
+                                            m_Dur = m.Dur,curent_age_v = curent_age)
         
         
         m.Costs.ae[, t +1 ] <- Costs_AE(AE_cost = AE_cost.l,m_Dur = m.Dur)
@@ -229,7 +200,7 @@ Microsimulation <- function(n.i, n.y, cyc.t, monitor,seed_n, df_char,Estimated_p
         new_mn <- m.M[ , t +1  ] %in% c("SN","SN_gen") & rowSums(m.Dur[,c("SN","SN_gen")] < cyc.t +0.01) 
         look_back_newmn <- seq( to = t , by = 1, length.out = 3)[seq( to = t , by = 1, length.out = 3) > 0]
         m.Costs.ae[ new_mn , look_back_newmn ] <- m.Costs.ae[ new_mn , look_back_newmn ]  +  Lookback_cost.l$Dx_SN
-      #}
+      }
       
       # General population costs
       # Assinged when alive and no costs
@@ -256,17 +227,10 @@ Microsimulation <- function(n.i, n.y, cyc.t, monitor,seed_n, df_char,Estimated_p
       m.Costs.ae[alive_indc & nocost & (curent_age >= 85 & curent_age < 90),t+1] <- General_pop_costs.l$ninty
       m.Costs.ae[alive_indc & nocost & (curent_age >= 90 ),t+1] <- General_pop_costs.l$death
       
-      # Cost of treatment
-      if (intervention == "Targeted" & t <= 24 & trt_duration == 2) { # only stays on treatment for 2 years
-        m.Costs.trt[alive_indc & df_char$Radiation == 0, t+1] <- Costs_trt.l$Targeted
-      } else if (intervention == "Targeted" & trt_duration == 1) { # lifetime treatment
-        m.Costs.trt[alive_indc & df_char$Radiation == 0, t+1] <- Costs_trt.l$Targeted
-      }
+      
       
       # Utilities
-      m.Utilities[,t +1 ] <-  Effects(lst.Util  = util_input,
-                                      cur_age_v = curent_age,
-                                      m_V       = m.Vis)
+      m.Utilities[,t +1 ] <-  Effects(lst.Util = util_input,cur_age_v = curent_age,m_V = m.Vis)
       
       if(t %% (n.t/10) == 0 & monitor) {
         message(paste("\r", round(t/(n.t), digits = 2),"%", "sim: ",sim_numi,print(pryr::mem_used()) ))}
@@ -290,36 +254,29 @@ Microsimulation <- function(n.i, n.y, cyc.t, monitor,seed_n, df_char,Estimated_p
     # event_df  <-data.frame(id = ind_v, time = m.DurV, state = event1)
     
     
-    t1 <- sum_function(sim_num       = sim_numi,
+    t1 <- sum_function(sim_num = sim_numi,
                        intervention1 = intervention,
-                       rr1           = rri,
-                       d_rate        = d.c,
-                       mM            = m.M,
-                       mDur          = m.Dur,
-                       mVis          = m.Vis,
-                       costsplgg     = m.Costs.plgg,
-                       costsAE       = m.Costs.ae,
-                       coststrt      = m.Costs.trt,
-                       costsrad      = m.Costs.rad,
-                       util          = m.Utilities,
-                       vRAD          = df_char$Radiation, 
-                       vFusion       = df_char$Fusion )
+                       rr1 = rri,d_rate = d.c,mM = m.M,mDur = m.Dur,mVis = m.Vis,
+                       costsplgg = m.Costs.plgg,costsAE = m.Costs.ae,util = m.Utilities,
+                       vRAD = df_char$Radiation, vFusion = df_char$Fusion )
     
+    
+    # 
     assign(intervention, t1)
     
   } # intervention loop ends
   
   
-  res_rad   <- rbind(Targeted$res_rad,   SoC$res_rad)
-  res_model <- rbind(Targeted$res_model, SoC$res_model)
-  res_OS    <- rbind(Targeted$res_OS,    SoC$res_OS)
-  res_tmat  <- rbind(Targeted$res_tmat,  SoC$res_tmat)
-  res_CI    <- rbind(Targeted$res_CI,    SoC$res_CI)
-  return(list(res_rad   = res_rad,
+  res_rad <- rbind(Rad_Fused$res_rad,Norad_Fused$res_rad)
+  res_model <- rbind(Rad_Fused$res_model,Norad_Fused$res_model)
+  res_OS <- rbind(Rad_Fused$res_OS,Norad_Fused$res_OS)
+  res_tmat <- rbind(Rad_Fused$res_tmat,Norad_Fused$res_tmat)
+  res_CI <- rbind(Rad_Fused$res_CI,Norad_Fused$res_CI)
+  return(list(res_rad = res_rad,
               res_model = res_model,
-              res_OS    = res_OS,
-              res_tmat  = res_tmat,
-              res_CI    = res_CI
+              res_OS = res_OS,
+              res_tmat = res_tmat,
+              res_CI = res_CI
   ))
   
   # return(paste0("completed",sim_numi))

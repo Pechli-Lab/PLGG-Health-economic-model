@@ -5,64 +5,62 @@ gen_costs <- function(){
   # input:
   # output: a list with Inpatient_Costs.l , Outpatient_costs.l, AE_costs.l, Lookback_costs.l
   # see 06_report, Tables_out for source of values
-  inflat <- 151.2/133.4 # StatsCan CPI 2022 vs. 2018
-  discount <- 0 # x% discount, e.g. 20% discount = 0.2
   
-  Inpatient_Costs.l  <- list(
-    pre_prog = c(14955.52, 357.26)*inflat, # Cycle 1; cycle 2 until patient is 18 years old (Supp table 1)
-    prog_1   = c(3876.69, 806.4)  *inflat, # Cycle 1; cycle 2 until patient is 18 years old (Supp table 1)
-    prog_2   = c(7358.42, 1367.02)*inflat) # Cycle 1; cycle 2 until patient is 18 years old (Supp table 1) # Cycle 1; cycle 2 until patient is 18 years old (Supp table 1)
+Inpatient_Costs.l <- list(
+  pre_prog = c(14955.52, 357.26),
+  prog_1 = c(3876.69, 806.4),
+  prog_2 = c(7358.42, 1367.02)) 
   
-  Outpatient_costs.l <- list(
-    pre_prog = c(3823.31)*inflat,  # Cycles 1-17 (Supp table 1)
-    prog_1   = c(3786.90)*inflat,  # Cycles 1 to 13 (0-52 weeks after progression) (Supp table 1)
-    prog_2   = c(3786.90)*inflat)  # Cycles 1 to 13 (0-52 weeks after progression) (Supp table 1)
-  
-  AE_cost.l <- list(Neurologic = c(30500,7400,1500)*inflat, # Cycle 1-2 post-injury; Cycles 3 to 11 after injury; Cycles 12 to (5 cycles before death) 
-                    Auditory   = c(8.33)*inflat,            # Cycle 1 to death
-                    Visual     = c(17.95,8.98,5.98)*inflat, # Cycles 1 to 12; Cycles 13 to 24; Cycles 25 to death
-                    Stroke     = c(21735, 4933)*inflat,     # Cycle 1; Cycles 2 to 20
-                    Cardiac    = c(20565,2997)*inflat,      # Cycle 1; Cycles 2 to 21
-                    SMN        = c(4566.84,664.5)*inflat)   # Cycles 1 - 6; Cycles 7- (12 cycles before death)
-  
-  Lookback_cost.l  <- list(death_plgg  = 25960.21*inflat,   # 12 Cycles before death 
-                           death_SN    = 5494.93*inflat,    # 12 cycles before death (Terminal)
-                           Dx_SN       = 2842.71*inflat)    # Pre-diagnosis (3 cycles)
-  
-  General_pop_costs.l <- list(five        = 2383.36/12*inflat, # Supp table 1
-                              ten         = 1412.68/12*inflat, 
-                              fifteen     = 1486.44/12*inflat, 
-                              twenty      = 1846.25/12*inflat, 
-                              twentyfive  = 1955.36/12*inflat, 
-                              thirty      = 2349.73/12*inflat, 
-                              thirtyfive  = 2618.95/12*inflat, 
-                              fourty      = 2543.75/12*inflat, 
-                              fourtyfive  = 2518.44/12*inflat, 
-                              fifty       = 2819.49/12*inflat, 
-                              fiftyfive   = 3281.00/12*inflat, 
-                              sixty       = 3948.83/12*inflat, 
-                              sixtyfive   = 4885.19/12*inflat, 
-                              seventy     = 6504.60/12*inflat, 
-                              seventyfive = 8438.69/12*inflat, 
-                              eighty      = 11313.55/12*inflat, 
-                              eightyfive  = 15676.13/12*inflat, 
-                              ninty       = 23267.29/12*inflat, 
-                              death       = 29464.58/12*inflat)
-  
-  Costs_testing.l = list(FISH       = 0, # One-time cost (Supp table 1)
-                         Nanostring = 0) # One-time cost (Supp table 1)
-  
-  Costs_trt.l = list(Targeted = 3958.42*inflat * (1-discount) ) # monthly
-  
-  return(list(Inpatient_Costs.l   = Inpatient_Costs.l,
-              Outpatient_costs.l  = Outpatient_costs.l,
-              AE_cost.l           = AE_cost.l,
-              Lookback_cost.l     = Lookback_cost.l,
-              General_pop_costs.l = General_pop_costs.l,
-              Costs_testing.l     = Costs_testing.l,
-              Costs_trt.l         = Costs_trt.l))  
-}
+Outpatient_costs.l <- list(  pre_prog = c(3823.31),
+                             prog_1 = c(3786.90),
+                             prog_2 = c(3786.90))
 
+AE_cost.l <- list(Neurologic = c(30500,7400,1500),
+                  Auditory = c(8.33),
+                  Visual = c(17.95,8.98,5.98),
+                  Stroke = c(21735, 4933),
+                  Cardiac = c(20565,2997),
+                  SMN = c(4566.84,664.5))
+
+Lookback_cost.l  <- list(
+  death_plgg  =25960.21,
+  death_SN = 5494.93,
+  Dx_SN = 2842.71)
+
+
+General_pop_costs.l <- list(     five = 2383.36/12,
+                                 ten = 1412.68/12, 
+                                 fifteen = 1486.44/12, 
+                                 twenty = 1846.25/12, 
+                                 twentyfive = 1955.36/12, 
+                                 thirty = 2349.73/12, 
+                                 thirtyfive = 2618.95/12, 
+                                 fourty = 2543.75/12, 
+                                 fourtyfive = 2518.44/12, 
+                                 fifty = 2819.49/12, 
+                                 fiftyfive = 3281.00/12, 
+                                 sixty = 3948.83/12, 
+                                 sixtyfive = 4885.19/12, 
+                                 seventy = 6504.60/12, 
+                                 seventyfive = 8438.69/12, 
+                                 eighty = 11313.55/12, 
+                                 eightyfive = 15676.13/12, 
+                                 ninty = 23267.29/12, 
+                                 death = 29464.58/12)
+
+Costs_testing.l = list(FISH = 500,
+                       Nanostring = 350)
+
+
+ 
+
+return(list(Inpatient_Costs.l = Inpatient_Costs.l,
+            Outpatient_costs.l =Outpatient_costs.l,
+            AE_cost.l          = AE_cost.l,
+            Lookback_cost.l    = Lookback_cost.l,
+            General_pop_costs.l = General_pop_costs.l,
+            Costs_testing.l = Costs_testing.l))  
+}
 
 
 
@@ -94,18 +92,18 @@ age_log <-  curent_age_v <= 18
 
 # Inpatient Costs
 ## Assinging based on what state, whether under 18, and if first cycle
-ret_costs_in[cur_state == 1 & age_log & first_cycle]  <- Inpatient_Costs$pre_prog[1]
+ret_costs_in[cur_state == 1 & age_log & first_cycle] <- Inpatient_Costs$pre_prog[1]
 ret_costs_in[cur_state == 1 & age_log & !first_cycle] <- Inpatient_Costs$pre_prog[2]
-ret_costs_in[cur_state == 2 & age_log & first_cycle]  <- Inpatient_Costs$prog_1[1]
+ret_costs_in[cur_state == 2 & age_log & first_cycle] <- Inpatient_Costs$prog_1[1]
 ret_costs_in[cur_state == 2 & age_log & !first_cycle] <- Inpatient_Costs$prog_1[2]
-ret_costs_in[cur_state == 3 & age_log & first_cycle]  <- Inpatient_Costs$prog_2[1]
+ret_costs_in[cur_state == 3 & age_log & first_cycle] <- Inpatient_Costs$prog_2[1]
 ret_costs_in[cur_state == 3 & age_log & !first_cycle] <- Inpatient_Costs$prog_2[2]
 
 # Outpatinet Costs
 # Each only occur for a sepcific cycle length
-ret_costs_out[cur_state == 1 & age_log & m_Dur[,"pre_prog"] <= (17.01*1/12)]    <- Outpatient_costs$pre_prog
-ret_costs_out[cur_state == 2 & age_log & m_Dur[,"prog1"]    <= (13.01*1/12)]    <- Outpatient_costs$prog_1
-ret_costs_out[cur_state == 3 & age_log & m_Dur[,"prog2"]    <= (13.01*1/12)]    <- Outpatient_costs$prog_2
+ret_costs_out[cur_state == 1 & age_log & m_Dur[,"pre_prog"] <= (17.01*1/12)] <-   Outpatient_costs$pre_prog
+ret_costs_out[cur_state == 2 & age_log & m_Dur[,"prog1"] <= (13.01*1/12)] <-   Outpatient_costs$prog_1
+ret_costs_out[cur_state == 3 & age_log & m_Dur[,"prog2"] <= (13.01*1/12)] <-   Outpatient_costs$prog_2
 
 return(ret_costs_out + ret_costs_in)
 

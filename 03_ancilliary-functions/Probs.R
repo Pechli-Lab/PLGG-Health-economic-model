@@ -1,7 +1,7 @@
 # Probs.R
 
 Probs <- function( M_it, D_m,  df.i, Vis_m, CycleLength, GlobT, EstPLGG, EstAE,
-                   AE_outside_mat1,PrMortCardio_mat1,SRS_mat, curent_age_v, rad_benefit1, inter, tt, trt_dur){
+                   AE_outside_mat1,PrMortCardio_mat1,SRS_mat, curent_age_v,rad_benefit1){
   # input: 
   # M_it: a numeric vector indicating current state 
   # D_m: matrix (numeric) indicating the duration of stay in each state
@@ -49,28 +49,21 @@ Probs <- function( M_it, D_m,  df.i, Vis_m, CycleLength, GlobT, EstPLGG, EstAE,
   
   if(anyFused){
     # Use probs functions created earlier to estimate probabilities 
-    # m.p.it[FusedLog, 1:4] <- Probs.plggFused(t_instate   = plgg.timeinstate[FusedLog] +CycleLength , 
-    #                                          Cycle1      =  CycleLength,
-    #                                          StateIndx   = plgg.char[FusedLog],
-    #                                          FlexSurvRes = EstPLGG,
-    #                                          inter       = inter,
-    #                                          tt          = tt,
-    #                                          trt_dur     = trt_dur)
-    # 
-    # # Similar for WT patients
-    # m.p.it[!FusedLog,c(1,2,3,4)] <- Probs.plggWT(t_instate = plgg.timeinstate[!FusedLog] + CycleLength, 
-    #                                              Cycle1 = CycleLength,
-    #                                              StateIndx = plgg.char[!FusedLog],
-    #                                              FlexSurvRes = EstPLGG)
+    m.p.it[FusedLog, 1:4] <- Probs.plggFused(t_instate = plgg.timeinstate[FusedLog] +CycleLength , 
+                                             Cycle1 =  CycleLength,
+                                             StateIndx = plgg.char[FusedLog],FlexSurvRes = EstPLGG)
+    
+    # Similar for WT patients
+    m.p.it[!FusedLog,c(1,2,3,4)] <- Probs.plggWT(t_instate = plgg.timeinstate[!FusedLog] + CycleLength, 
+                                                 Cycle1 = CycleLength,
+                                                 StateIndx = plgg.char[!FusedLog],
+                                                 FlexSurvRes = EstPLGG)
     
   } else { # No fused
-    m.p.it[,c(1,2,3,4)] <- Probs.plggWT(t_instate   = plgg.timeinstate+ CycleLength, 
-                                        Cycle1      = CycleLength,
-                                        StateIndx   = plgg.char,
-                                        FlexSurvRes = EstPLGG,
-                                        inter       = inter,
-                                        tt          = tt,
-                                        trt_dur     = trt_dur)
+    m.p.it[,c(1,2,3,4)] <- Probs.plggWT(t_instate = plgg.timeinstate+ CycleLength, 
+                                        Cycle1 =CycleLength,
+                                        StateIndx = plgg.char,
+                                        FlexSurvRes = EstPLGG)
   }
   
   ## Radiation Benefit
