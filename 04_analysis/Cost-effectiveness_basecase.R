@@ -103,11 +103,21 @@ dig_radbenefit1  <- readRDS(paste0(loc_here, "02_data/cherlow_dig.RDS"))
 
 k1 <- fun_genRadBenefit(dig_radbenefit =dig_radbenefit1, deter =T)
 
+## Survival curves
+# Targeted
+load(paste0(here::here("04_analysis","targeted survival"),"/fitted_PFS_targeted_swimmer.RData")) 
 
+# Control scenario 1
+load(paste0(here::here("04_analysis","control scenarios","Bryans SickKids data"),"/fitted_PFS_control_sk.RData")) 
+# Control scenario 2
+#load(paste0(here::here("04_analysis","control scenarios","Lianas paper PFS"),"/fitted_PFS_control_liana.RData")) 
+# Control scenario 3
+#load(paste0(here::here("04_analysis","control scenarios","Bryans SickKids data"),"/fitted_PFS_control_sk_firstline.RData")) 
+#load(paste0(here::here("04_analysis","control scenarios","Erics firstline RCT"),"/fitted_PFS_control_firstline.RData"))
 
 
 ## Global Parameters
-N_sim <- 1000
+N_sim <- 1
 torun1 <- 1:N_sim
 
 for(sim_num1 in torun1){
@@ -128,30 +138,49 @@ for(sim_num1 in torun1){
   # Estimating radiated paitents benefit
   
   # here stuck at generating flexsurv ojbects will be done after model run 
-  
-   rad_benefit_flex <- F
+  rad_benefit_flex    <- fun_genRadBenefit(dig_radbenefit = dig_radbenefit1, deter = F)
+  rad_benefit_flex$rr <- 1
+  #rad_benefit_flex <- F
   
   Estimated_plgg1 <- readRDS(
     paste0(loc_here,"02_data/bootstrap/bootstrapped_",sim_num1,"_TRUE.RDS"))
   Util_i <- gen_Effects(deter = F,  beta_Utils =df_beta_Utils)
   
+  # Bootstrap sampling with replacement from Liana's paper's PFS swimmer plot data
+  Estimated_plgg1$flexobj[[2]][1][[1]]  <- fitted_PFS_targeted[[sim_num1]] # Liana's paper's PFS (targeted)
+  Estimated_plgg1 <- rbind(Estimated_plgg1, Estimated_plgg1[1,])
+  Estimated_plgg1$flexobj[[11]][1][[1]] <- fitted_PFS_chemo[[sim_num1]]    # Sickkids/Bryan data PFS (control)
   
-  n.y_g <- 80              # time horizon, 70 years
-  cyc.t_g <- 1/12           # cycle length 
-  seed_n.g <- 1
+  n.y_g     <- 80              # time horizon, 80 years
+  cyc.t_g   <- 1/12           # cycle length 
+  seed_n.g  <- 1
   df_char_g <- gen_synpop(n1 = 10000)
   
   df_char_g$Radiation <- 0
   n.i_g <- dim(df_char_g)[1]         # number of individuals        
   
   ## assuming no benefit to radiation 
-  qr1 <- Microsimulation(n.i = n.i_g,n.y = n.y_g,cyc.t = 1/12,monitor = F,seed_n = sim_num*200,
-                         df_char = df_char_g,Estimated_plgg = Estimated_plgg1,Estimated_ae = Estimated_ae1,
-                         AE_outside_mat = AE_outside_mat1,PrMortCardio_mat = PrMortCardio_mat1,
-                         SRS_mat1 = RSR_mat,cost_input = cost_input.l, rad_benefit  =  rad_benefit_flex,
-                         util_input = Util_i, uindx = 1, 
-                         d.c = 0.00246627, d.e = 0.00246627,
-                         sim_numi = sim_num, rri = 0,loc_out1 = loc_here_out )
+  qr1 <- Microsimulation(n.i              = n.i_g,
+                         n.y              = n.y_g,
+                         cyc.t            = 1/12,
+                         monitor          = F,
+                         seed_n           = sim_num*200,
+                         df_char          = df_char_g,
+                         Estimated_plgg   = Estimated_plgg1,
+                         Estimated_ae     = Estimated_ae1,
+                         AE_outside_mat   = AE_outside_mat1,
+                         PrMortCardio_mat = PrMortCardio_mat1,
+                         SRS_mat1         = RSR_mat,
+                         cost_input       = cost_input.l, 
+                         rad_benefit      =  rad_benefit_flex,
+                         util_input       = Util_i, 
+                         uindx            = 1, 
+                         d.c              = 0.00246627, 
+                         d.e              = 0.00246627,
+                         sim_numi         = sim_num, 
+                         rri              = 0,
+                         loc_out1         = loc_here_out,
+                         trt_duration     = 2)
   message("finished assuming no radiation benefit")
   
   for( i in seq_along(qr1)){
@@ -160,22 +189,22 @@ for(sim_num1 in torun1){
 
   rm(qr1)
   ## assuming benefit of radiation
-  rad_benefit_flex<-    fun_genRadBenefit(dig_radbenefit =dig_radbenefit1, deter =F)
-  rad_benefit_flex$rr <- 1
-  
-  qr2 <- Microsimulation(n.i = n.i_g,n.y = n.y_g,cyc.t = 1/12,monitor = F,seed_n = sim_num*200,
-                         df_char = df_char_g,Estimated_plgg = Estimated_plgg1,Estimated_ae = Estimated_ae1,
-                         AE_outside_mat = AE_outside_mat1,PrMortCardio_mat = PrMortCardio_mat1,
-                         SRS_mat1 = RSR_mat,cost_input = cost_input.l, rad_benefit  =  rad_benefit_flex,
-                         util_input = Util_i, uindx = 1, 
-                         d.c = 0.00246627, d.e = 0.00246627,
-                         sim_numi = sim_num, rri = 1,loc_out1 = loc_here_out )
-  
-  for( i in seq_along(qr2)){
-    saveRDS(qr2[[i]], paste0(loc_here_out, names(qr2)[i], "/", "model_", sim_num, "_RR_0.RDS" ))
-  }
-  rm(qr2)
-  message(paste0( "run:",  floor(sim_num / 100), "percent:"  ,round(sim_num1/100, digits = 2)))
+  # rad_benefit_flex<-    fun_genRadBenefit(dig_radbenefit =dig_radbenefit1, deter =F)
+  # rad_benefit_flex$rr <- 1
+  # 
+  # qr2 <- Microsimulation(n.i = n.i_g,n.y = n.y_g,cyc.t = 1/12,monitor = F,seed_n = sim_num*200,
+  #                        df_char = df_char_g,Estimated_plgg = Estimated_plgg1,Estimated_ae = Estimated_ae1,
+  #                        AE_outside_mat = AE_outside_mat1,PrMortCardio_mat = PrMortCardio_mat1,
+  #                        SRS_mat1 = RSR_mat,cost_input = cost_input.l, rad_benefit  =  rad_benefit_flex,
+  #                        util_input = Util_i, uindx = 1, 
+  #                        d.c = 0.00246627, d.e = 0.00246627,
+  #                        sim_numi = sim_num, rri = 1,loc_out1 = loc_here_out )
+  # 
+  # for( i in seq_along(qr2)){
+  #   saveRDS(qr2[[i]], paste0(loc_here_out, names(qr2)[i], "/", "model_", sim_num, "_RR_0.RDS" ))
+  # }
+  # rm(qr2)
+  # message(paste0( "run:",  floor(sim_num / 100), "percent:"  ,round(sim_num1/100, digits = 2)))
   
 }
 

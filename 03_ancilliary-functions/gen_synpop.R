@@ -1,6 +1,6 @@
 gen_synpop <- function( n1=  100000, deter = T){
   #l1: list of mean ,sd agedx, and neseted glms fit to fusion and sex
-    if(deter = T){
+    if(deter == T){
   AgeDx = round(runif(n = n1, min = 0,max = 18))
   coef1 <- c(0.03758116, -0.006658198) # intercenpt + AgeDx, binomial 
   o1 <- exp(cbind(1, AgeDx) %*% coef1)
@@ -8,8 +8,8 @@ gen_synpop <- function( n1=  100000, deter = T){
   coef2 <- c(0.1107713, -0.05921511, -0.2586516) # interept + Agedx + Sex
   
   o2 <- exp(cbind(1, AgeDx,Sex) %*% coef2)
-  Fusion =  rbinom(n1,1, prob = o2/(1+o2))
-  
+  #Fusion =  rbinom(n1,1, prob = o2/(1+o2))
+  Fusion <- rep(0, n1) # all WT (non-fused) patients
   
   ret<-  data.frame(AgeDx = AgeDx,
              Sex = Sex,
