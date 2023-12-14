@@ -105,21 +105,17 @@ k1 <- fun_genRadBenefit(dig_radbenefit =dig_radbenefit1, deter =T)
 
 ## Survival curves
 # Targeted
-load(paste0(here::here("04_analysis","targeted survival"),"/fitted_PFS_targeted_swimmer.RData")) 
+load(paste0(here::here("04_analysis","control scenarios","Erics firstline RCT"),"/fitted_PFS_targeted_firstline.RData"))
 
-# Control scenario 1
-load(paste0(here::here("04_analysis","control scenarios","Bryans SickKids data"),"/fitted_PFS_control_sk.RData")) 
-# Control scenario 2
-#load(paste0(here::here("04_analysis","control scenarios","Lianas paper PFS"),"/fitted_PFS_control_liana.RData")) 
-# Control scenario 3
-#load(paste0(here::here("04_analysis","control scenarios","Bryans SickKids data"),"/fitted_PFS_control_sk_firstline.RData")) 
-#load(paste0(here::here("04_analysis","control scenarios","Erics firstline RCT"),"/fitted_PFS_control_firstline.RData"))
-
+# Control 
+load(paste0(here::here("04_analysis","control scenarios","Erics firstline RCT"),"/fitted_PFS_control_firstline.RData"))
+# load(paste0(here::here("04_analysis","control scenarios","Bryans SickKids data"),"/fitted_PFS_control_sk_firstline.RData"))
 
 ## Global Parameters
-N_sim <- 1
+N_sim <- 10
 torun1 <- 1:N_sim
 
+start.time <- Sys.time()
 for(sim_num1 in torun1){
   
   sim_num <- sim_num1
@@ -147,12 +143,12 @@ for(sim_num1 in torun1){
   Util_i <- gen_Effects(deter = F,  beta_Utils =df_beta_Utils)
   
   # Bootstrap sampling with replacement from Liana's paper's PFS swimmer plot data
-  Estimated_plgg1$flexobj[[2]][1][[1]]  <- fitted_PFS_targeted[[sim_num1]] # Liana's paper's PFS (targeted)
+  Estimated_plgg1$flexobj[[2]][1][[1]]  <- fitted_PFS_targeted[[sim_num1]] # Eric's paper's PFS (targeted)
   Estimated_plgg1 <- rbind(Estimated_plgg1, Estimated_plgg1[1,])
-  Estimated_plgg1$flexobj[[11]][1][[1]] <- fitted_PFS_chemo[[sim_num1]]    # Sickkids/Bryan data PFS (control)
+  Estimated_plgg1$flexobj[[11]][1][[1]] <- fitted_PFS_chemo[[sim_num1]]    # Eric's PFS (control) or SickKids Bryan n=34
   
-  n.y_g     <- 80              # time horizon, 80 years
-  cyc.t_g   <- 1/12           # cycle length 
+  n.y_g     <- 80           # time horizon, 80 years
+  cyc.t_g   <- 1/12         # cycle length 
   seed_n.g  <- 1
   df_char_g <- gen_synpop(n1 = 10000)
   
@@ -175,8 +171,8 @@ for(sim_num1 in torun1){
                          rad_benefit      =  rad_benefit_flex,
                          util_input       = Util_i, 
                          uindx            = 1, 
-                         d.c              = 0.00246627, 
-                         d.e              = 0.00246627,
+                         d.c              = 0.015/12, # 1.5% annual discount rate, to monthly
+                         d.e              = 0.015/12, 
                          sim_numi         = sim_num, 
                          rri              = 0,
                          loc_out1         = loc_here_out,
@@ -207,7 +203,7 @@ for(sim_num1 in torun1){
   # message(paste0( "run:",  floor(sim_num / 100), "percent:"  ,round(sim_num1/100, digits = 2)))
   
 }
-
+Time.elapsed <- Sys.time()-start.time
 
 
 
