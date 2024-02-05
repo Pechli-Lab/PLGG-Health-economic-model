@@ -1,0 +1,741 @@
+---
+title: "Manuscript results"
+output:
+  word_document: default
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, warning=F, message=F)
+#rm(list = ls())
+options(scipen=999)
+```
+
+```{r required packages}
+require(tidyverse)    # for data manipulation
+require(formattable)  # for formatting tables
+require(knitr)        # for saving tables
+require(scales)       # for ggplot axis labels
+library(gridExtra)    # for gridded plots 
+require(survival)     # for survival analysis
+require(survminer)    # for survival plotting
+```
+
+compare survival curves (input and output)
+
+time from 1st progression to model start (diagnosis to 1st prog or 1st prog to 2nd prog)
+
+time to death
+
+survival curves best/2nd best: choose the one that best reflects clinicians input (rather than AIC/BIC), use Exponential (force things to go down quicker, as clinicians don't expect the flattening)
+
+discounting scenarios and 2nd-best distribution
+
+
+## Data location
+
+```{r}
+fileloc <- here::here("04_analysis","output","scenarios","basecase exp lifetime combo")
+nn <- 50
+```
+
+The files are spread out over 5 folders. 
+
+## Table 2 & Abstract
+
+Coding the following: 
+
+Table 2:Estimates of life-years after diagnosis, QALYs (Discounted) and Costs (Discounted) Estimates reported with 95% Confidence Interval in brackets. All costs are given in Canadian dollars.
+
+Abstract results
+
+```{R}
+# model results 
+#res_model <- list.files(paste0(fileloc, "/Scenario 1 life-time treatment", "/res_model"),full.names = TRUE)
+#res_model <- list.files(paste0(here::here("04_analysis","output"), "/res_model"),full.names = TRUE)[1:5]
+res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[1:nn]
+#res_model <- list.files(paste0(fileloc, "output/rad_after_prog2_lifetime_discount20", "/res_model"),full.names = TRUE)
+#res_model <- list.files(paste0(fileloc, "output/rad_after_prog2_lifetime_discount30", "/res_model"),full.names = TRUE)
+
+#res_model <- list.files(paste0(fileloc, "output/rad_after_prog2_2yrs", "/res_model"),full.names = TRUE)
+#res_model <- list.files(paste0(fileloc, "output/rad_after_prog2_2yrs_discount20", "/res_model"),full.names = TRUE)
+#res_model <- list.files(paste0(fileloc, "output/rad_after_prog2_2yrs_discount30", "/res_model"),full.names = TRUE)
+
+# turning into dataframe
+df_model  <- map_df(res_model, readRDS) 
+df_model <- df_model %>% filter(subset == "all")
+# creating a key in the same format as the one in correct_surv
+df_model <- df_model %>% 
+  mutate(key = paste0(sim,"_",rr))
+
+# fixing survival for everyone who doesn't have a correct survival time
+df_model <- df_model %>% 
+    mutate( Value = ifelse(Variable == "LY", 80-Value, Value))
+
+# no longer need key 
+df_model <- df_model %>%
+  select(-key)
+```
+
+```{r}
+df_output <- df_model %>% filter(discount == 1) %>% select(-rr)
+# df_output$intervention[df_output$intervention == "SoC"] <- "Targeted"
+df_output1 <- df_output %>% group_by(Variable, Type) %>% summarise(Mean = mean(Value))
+write.csv(df_output1, "output.csv", row.names = F)
+```
+
+```{r}
+df_delta <- df_model %>% 
+  spread(intervention, Value) %>%   
+  mutate(Delta = Targeted-SoC) %>% 
+  select(-Targeted,-SoC)
+
+df_model <- df_model %>% 
+  group_by(Variable, Type, subset, intervention, discount, rr) %>% 
+  summarise( mean = mean(Value),
+             q025 = quantile(Value, 0.025),
+             q975 = quantile(Value, 0.975)) %>% ungroup()
+df_model <-df_model %>% 
+  mutate(mean = case_when(Variable == "Cost"~ paste0(currency(mean,
+                                                              symbol = "\\$" ,digits = 0)),
+                          Variable != "Cost"~ paste0(round(mean, 2))),
+         q025 = case_when(Variable == "Cost"~ paste0(currency(q025, symbol = "\\$" ,digits = 0)),
+                          Variable != "Cost"~ paste0(round(q025, 2))),
+        q975 = case_when(Variable == "Cost"~ paste0(currency(q975, symbol = "\\$" ,digits = 0)),
+                          Variable != "Cost"~ paste0(round(q975, 2))                  
+                          )
+         ) %>% 
+  mutate( stat = paste0(mean, " (", q025, ";",q975,")"))
+
+df_model1 <- df_model %>% 
+  select(-mean, - q025, -q975)
+
+
+df_delta1 <- df_delta %>% rename(Value = Delta) %>% 
+  group_by(Variable, Type, subset, discount, rr) %>% 
+  summarise( mean = mean(Value),
+             q025 = quantile(Value, 0.025),
+             q975 = quantile(Value, 0.975)) %>% ungroup() %>% 
+  mutate(mean = case_when(Variable == "Cost"~ paste0(currency(mean, symbol = "\\$" ,digits = 0)),
+                          Variable != "Cost"~ paste0(round(mean, 2))),
+         q025 = case_when(Variable == "Cost"~ paste0(currency(q025, symbol = "\\$" ,digits = 0)),
+                          Variable != "Cost"~ paste0(round(q025, 2))),
+        q975 = case_when(Variable == "Cost"~ paste0(currency(q975, symbol = "\\$" ,digits = 0)),
+                          Variable != "Cost"~ paste0(round(q975, 2))               
+                         
+                          )
+         ) %>% 
+  mutate( stat = paste0(mean, " (", q025, ";",q975,")")) %>% 
+    select(-mean, - q025, -q975)
+
+df_deltacea <- df_delta %>% 
+    filter(Type == "Total" | Type == "QALY", subset == "all", discount == 1 ) %>% select(-Type)  %>% spread(Variable, Delta)
+
+df_model2 <- df_model1 %>% 
+  bind_rows(mutate( df_delta1, intervention = "delta")) %>% 
+    mutate(Variable = factor(Variable, levels = c("LY","QALY","Cost")),
+         Type = factor(Type, levels = c("LY","QALY","Total","PLGG","AE","Treatment","Radiation"))
+         ) %>% 
+  arrange(Variable, Type, discount, rr) %>% 
+  spread(intervention, stat)
+
+df_model3 <- df_model2 %>% 
+  arrange(subset, rr, Variable, Type, discount )
+
+
+
+tb2 <-df_model3  %>%
+  filter(subset == "all") %>% 
+  filter( !(Variable == "Cost" & discount == 0),
+          !(Variable == "QALY" & discount == 0) ) %>%
+  select(-Variable, - subset,-discount  ) %>% 
+  rename(Variable = Type,
+         Delta = delta,
+         intervention = Targeted,
+         control = SoC) 
+```
+
+**Table 2**: 
+
+```{r}
+library(pander)
+library(forcats)
+
+# kable(tb2)
+tb2a <- tb2 %>% 
+  mutate(Variable = fct_recode(Variable, `Life-years` = "LY", 
+                               QALY = "QALY",
+                               `Total Cost` = "Total")) %>%
+  #select(Variable, intervention, control, Delta , rr)
+  select(Variable, intervention, control, Delta )
+tb2a$Variable <- as.character(tb2a$Variable)
+tb2a$Variable[tb2a$Variable=="Treatment"] <- "Targeted costs"
+tb2a$Variable[tb2a$Variable=="PLGG"] <- "Non-Targeted PLGG related costs"
+tb2a$Variable[tb2a$Variable=="AE"] <- "AE related costs"
+tb2a$Variable[tb2a$Variable=="Radiation"] <- "Radiation costs"
+tb2a$Variable <- factor(tb2a$Variable, levels = c("Life-years","QALY","Total Cost","Non-Targeted PLGG related costs",
+                                                  "AE related costs","Targeted costs","Radiation costs"))
+pander(tb2a)
+``` 
+
+```{r}
+# Averaging cohort traces across simulation run
+l_prop_df <- list.files(paste0(fileloc, "/trace"),full.names = TRUE)[1:nn]
+prop_df  <- map_df(l_prop_df[1], readRDS) 
+prop_df$cycle <- as.numeric(prop_df$cycle)
+prop_df$intervention <- ifelse(prop_df$intervention == "Targeted", 1, 0)
+prop_df <- apply(prop_df,2,as.numeric)
+prop_df <- as.data.frame(prop_df)
+prop_df <- prop_df %>% dplyr::select("cycle", "pre_prog", "auditory", "cardiovascular", "death_outside", 
+                                             "death_plgg", "neurologic", "prog1", "SN", "stroke", "visual", "death_cardio",
+                                             "prog2", "SN_gen", "death_SN", "death_stroke", "cardiovascular_gen",
+                                             "stroke_gen", "intervention")
+if (nn > 1) {
+  for (i in 2:nn) {
+    prop_df_i  <- map_df(l_prop_df[i], readRDS) 
+    prop_df_i$cycle <- as.numeric(prop_df_i$cycle)
+    prop_df_i$intervention <- ifelse(prop_df_i$intervention == "Targeted", 1, 0)
+    prop_df_i <- prop_df_i %>% dplyr::select("cycle", "pre_prog", "auditory", "cardiovascular", "death_outside", 
+                                             "death_plgg", "neurologic", "prog1", "SN", "stroke", "visual", "death_cardio",
+                                             "prog2", "SN_gen", "death_SN", "death_stroke", "cardiovascular_gen",
+                                             "stroke_gen", "intervention")
+    prop_df_i <- apply(prop_df_i,2,as.numeric)
+    prop_df_i <- as.data.frame(prop_df_i)
+    prop_df <- prop_df + prop_df_i
+  }
+  prop_df <- prop_df/nn
+}
+prop_df$intervention <- ifelse(prop_df$intervention == 1, "Targeted", "SoC")
+
+prop_long <- prop_df %>% select(cycle, pre_prog, prog1, prog2, death_plgg, intervention) %>%
+  tidyr::pivot_longer(-c(cycle,intervention), names_to = "state", values_to = "proportion") %>%
+  mutate(state=case_when(state=="pre_prog"~"Pre-progression",
+                         state=="prog1" ~ "1st progression",
+                         state=="prog2" ~ "2nd+ progression",
+                         state=="death_plgg" ~ "PLGG-related death"),
+         state=factor(state, levels=c("Pre-progression", "1st progression", "2nd+ progression", "PLGG-related death")),
+         cycle=cycle/12)
+ggplot(data = prop_long, aes(x = cycle, y = proportion, color = state, group = state)) +
+  geom_line() +
+  labs(title = "Trace Plot of PLGG States Across Cycles",
+       x = "Year",
+       y = "Proportion",
+       color = "PLGG state") +
+  scale_color_manual(values = c("green","orange","red","navy")) + 
+  scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.1)) +
+  scale_x_continuous(limits = c(0, 80), breaks = seq(0, 80, by = 10)) +
+  #geom_hline(yintercept=0.4, linetype="dashed", color = "purple") +
+  #geom_vline(xintercept=25, linetype="dashed", color = "purple") +
+  theme_bw() +
+  theme(legend.position = "right") + 
+  facet_wrap(~intervention)
+```
+
+```{r}
+# AEs
+l_AE_df <- list.files(paste0(fileloc, "/AE_track"),
+                      full.names = TRUE)[1:nn]
+AE_df <- map_df(l_AE_df[1], readRDS) 
+## Targeted
+AE_df_Targeted <- AE_df %>% filter(intervention == "Targeted")
+AE_prop_Targeted <-apply(AE_df_Targeted %>% dplyr::select(-intervention), 2, function(x){prop.table(table(x))})
+df_AE_Targeted <- data.frame(cycle=0:960)
+df_AE_Targeted$cycle <- as.factor(df_AE_Targeted$cycle)
+for (i in 1:length(AE_prop_Targeted)){
+  df_AE_prop <- as.data.frame(AE_prop_Targeted[[i]])
+  colnames(df_AE_prop) <- c("cycle",names(AE_prop_Targeted)[i])
+  df_AE_Targeted <- df_AE_Targeted %>% left_join(df_AE_prop, by = c("cycle"))
+}
+df_AE_Targeted[1,-1] <- 0
+df_AE_Targeted$cycle <- as.numeric(df_AE_Targeted$cycle)
+df_AE_Targeted[is.na(df_AE_Targeted)] <- 0
+if (nn == 1) {
+  df_AE_Targeted$intervention <- "Targeted"
+}
+
+if (nn > 1) {
+  for (i in 2:nn) {
+    AE_df <- map_df(l_AE_df[i], readRDS) 
+    AE_df_Targeted_i <- AE_df %>% filter(intervention == "Targeted")
+    AE_prop_Targeted_i <-apply(AE_df_Targeted_i %>% dplyr::select(-intervention), 2, function(x){prop.table(table(x))})
+    df_AE_Targeted_i <- data.frame(cycle=0:960)
+    df_AE_Targeted_i$cycle <- as.factor(df_AE_Targeted_i$cycle)
+    for (j in 1:length(AE_prop_Targeted_i)){
+      df_AE_prop <- as.data.frame(AE_prop_Targeted_i[[j]])
+      colnames(df_AE_prop) <- c("cycle",names(AE_prop_Targeted_i)[j])
+      df_AE_Targeted_i <- df_AE_Targeted_i %>% left_join(df_AE_prop, by = c("cycle"))
+    }
+    df_AE_Targeted_i[1,-1] <- 0
+    df_AE_Targeted_i$cycle <- as.numeric(df_AE_Targeted_i$cycle)
+    df_AE_Targeted_i[is.na(df_AE_Targeted_i)] <- 0
+    df_AE_Targeted <- df_AE_Targeted + df_AE_Targeted_i
+  }
+  df_AE_Targeted <- df_AE_Targeted/nn
+  df_AE_Targeted$intervention <- "Targeted"
+}
+## SoC
+AE_df_SoC <- AE_df %>% filter(intervention == "SoC")
+AE_prop_SoC <-apply(AE_df_SoC %>% dplyr::select(-intervention), 2, function(x){prop.table(table(x))})
+df_AE_SoC <- data.frame(cycle=0:960)
+df_AE_SoC$cycle <- as.factor(df_AE_SoC$cycle)
+for (i in 1:length(AE_prop_SoC)){
+  df_AE_prop <- as.data.frame(AE_prop_SoC[[i]])
+  colnames(df_AE_prop) <- c("cycle",names(AE_prop_SoC)[i])
+  df_AE_SoC <- df_AE_SoC %>% left_join(df_AE_prop, by = c("cycle"))
+}
+df_AE_SoC[1,-1] <- 0
+df_AE_SoC$cycle <- as.numeric(df_AE_SoC$cycle)
+df_AE_SoC[is.na(df_AE_SoC)] <- 0
+if (nn == 1) {
+  df_AE_SoC$intervention <- "SoC"
+}
+
+if (nn > 1) {
+  for (i in 2:nn) {
+    AE_df <- map_df(l_AE_df[i], readRDS) 
+    AE_df_SoC_i <- AE_df %>% filter(intervention == "SoC")
+    AE_prop_SoC_i <-apply(AE_df_SoC_i %>% dplyr::select(-intervention), 2, function(x){prop.table(table(x))})
+    df_AE_SoC_i <- data.frame(cycle=0:960)
+    df_AE_SoC_i$cycle <- as.factor(df_AE_SoC_i$cycle)
+    for (j in 1:length(AE_prop_SoC_i)){
+      df_AE_prop <- as.data.frame(AE_prop_SoC_i[[j]])
+      colnames(df_AE_prop) <- c("cycle",names(AE_prop_SoC_i)[j])
+      df_AE_SoC_i <- df_AE_SoC_i %>% left_join(df_AE_prop, by = c("cycle"))
+    }
+    df_AE_SoC_i[1,-1] <- 0
+    df_AE_SoC_i$cycle <- as.numeric(df_AE_SoC_i$cycle)
+    df_AE_SoC_i[is.na(df_AE_SoC_i)] <- 0
+    df_AE_SoC <- df_AE_SoC + df_AE_SoC_i
+  }
+  df_AE_SoC <- df_AE_SoC/nn
+  df_AE_SoC$intervention <- "SoC"
+}
+
+df_AE <- rbind(df_AE_Targeted, df_AE_SoC)
+
+prop_long <- df_AE %>% select(cycle,auditory,cardiovascular,neurologic,SN,stroke,visual,intervention) %>%
+  tidyr::pivot_longer(-c(cycle,intervention), names_to = "state", values_to = "proportion") %>%
+  mutate(cycle=cycle/12)
+ggplot(data = prop_long, aes(x = cycle, y = proportion, color = state, group = state)) +
+  geom_line() +
+  labs(title = "Trace Plot of PLGG-related AE States Across Cycles",
+       x = "Year",
+       y = "Proportion",
+       color = "PLGG-related AE states") +
+  theme_bw() +
+  theme(legend.position = "right") +
+  facet_wrap(~intervention) -> a
+
+prop_long <- df_AE %>% select(cycle,SN_gen,cardiovascular_gen,death_outside,death_SN,stroke_gen,death_cardio,death_stroke, 
+                                intervention) %>%
+  tidyr::pivot_longer(-c(cycle,intervention), names_to = "state", values_to = "proportion") %>%
+  mutate(cycle=cycle/12)
+ggplot(data = prop_long, aes(x = cycle, y = proportion, color = state, group = state)) +
+  geom_line() +
+  labs(title = "Trace Plot of Other AE States Across Cycles",
+       x = "Year",
+       y = "Proportion",
+       color = "Other AE states") +
+  theme_bw() +
+  theme(legend.position = "right") +
+  facet_wrap(~intervention) -> b
+grid.arrange(a,b, nrow=2, ncol=1)
+```
+
+```{r}
+
+```
+
+## Supplementary Table 1 
+
+Supplementary Table 1: Estimates of life-years after diagnosis, QALYs (Discounted) and Costs (Discounted), for fused patients, and fused patients who progressed.
+
+<!-- ```{r} -->
+
+<!-- sm_tb1 <-df_model3  %>% -->
+<!--   filter(subset == "fused") %>%  -->
+<!--   filter( !(Variable == "Cost" & discount == 0), -->
+<!--           !(Variable == "QALY" & discount == 0) ) %>% -->
+<!--   select(-Variable,-discount  ) %>%  -->
+<!--   rename(Variable = Type, -->
+<!--          Delta = delta, -->
+<!--          intervention = Targeted, -->
+<!--          control = SoC)  -->
+
+<!-- sm_tb1 <- sm_tb1 %>% rename(Control = control, -->
+<!--                             Experimental = intervention, -->
+<!--                             `Difference (Experimental - Control)` = Delta) -->
+<!-- sm_tb1$Variable <- as.character(sm_tb1$Variable) -->
+<!-- sm_tb1$Variable[3:7] <- c("Total costs", "Non-targeted therapy PLGG costs", "AE costs", -->
+<!--                           "Treatment costs", "Radiation costs") -->
+
+<!-- sm_tb1 %>% select(-subset, -rr) %>% select(Variable, Experimental, Control, `Difference (Experimental - Control)`) %>% -->
+<!--   kable() -->
+<!-- ``` -->
+
+```{r}
+
+```
+
+<!-- ## Figure 4 Cost-effectiveness plane -->
+
+<!-- Figure 4: Cost-effectiveness plane indicating the incremental cost and incremental effectiveness estimates related to molecular testing for each probabilistic simulation assuming both a no-radiation (n = 1,000) and radiation benefit (n = 1,000) -->
+
+<!-- ```{r} -->
+<!-- df_deltacea <- df_delta %>%  -->
+<!--     filter(Type == "Total" | Type == "QALY", subset == "fused", discount == 1 ) %>% select(-Type)  %>% spread(Variable, Delta) -->
+
+
+<!-- df_deltacea1 <- df_deltacea %>%  -->
+<!--   mutate(rr =factor(rr, levels = c(0,1), labels = c("No radiation benefit","Radiation benefit")), -->
+<!--          type = "all") -->
+<!-- df_means <- df_deltacea %>%  -->
+<!--   group_by(rr) %>%  -->
+<!--   summarise(Cost = mean(Cost), -->
+<!--             QALY = mean(QALY)) %>%  -->
+<!--   mutate(type = "Mean Values") %>%  -->
+<!--   mutate(rr1 = factor(rr, levels = c(0,1), labels = c("No radiation benefit","Radiation benefit") )) -->
+<!-- toplot_plane <-df_deltacea1 %>%  -->
+<!--   ggplot() +  -->
+<!--   geom_point(aes(x = QALY, y = Cost), alpha = 0.75 , size = 0.6) +  -->
+<!--   # geom_point(aes(x = QALY, y = Cost), color = "black", data = df_means,shape = 2,show.legend = TRUE, size = 3) +  -->
+<!--   geom_hline(yintercept = 0) +  -->
+<!--   geom_vline(xintercept = 0) +  -->
+<!--   theme_bw() +  -->
+<!--   theme(legend.title = element_blank()) + -->
+<!--   ylab("Discounted Total Costs") +   -->
+<!--   xlab("Discounted QALYs") +  -->
+<!--   labs(color = "", shape = "Mean") + -->
+<!--   scale_y_continuous(labels = dollar_format(prefix="$")) + -->
+<!--   facet_wrap(~ rr) +  -->
+<!--   theme( panel.grid.major = element_blank(), -->
+<!-- panel.grid.minor = element_blank(), axis.line = element_line(colour = "black")) -->
+
+
+<!-- toplot_plane -->
+
+<!-- ``` -->
+
+<!-- # Figure 2  -->
+
+<!-- Figure 2: Median cumulative incidence of all-cause mortality for all patients assuming n o radiation benefit or with radiation benefit. -->
+
+<!-- ```{r} -->
+<!-- res_os <- list.files(paste0(fileloc, "/res_OS"),full.names = TRUE) -->
+<!-- df_OS <- map_df(res_os, readRDS) -->
+
+<!-- df_med <- df_OS %>% -->
+<!--   group_by(cycle, type, intervention, rr) %>% -->
+<!--   summarise(median = median(OS)) %>% ungroup() %>% -->
+<!--    mutate(rr = ifelse(rr == 0, "No radiation benefit", "Radiation benefit")) %>% -->
+<!--     mutate(intervention  = ifelse(intervention == "Norad_Fused", "Intervention","Control")) -->
+
+
+
+<!-- df_delta <- df_OS %>% -->
+<!--   spread(intervention, OS) %>% -->
+<!--   mutate(delta = (1-Targeted) - (1-SoC)) %>% -->
+<!--   select(-Targeted, - SoC) %>% -->
+<!--   group_by(cycle, type, rr) %>% -->
+<!--   summarise(median = median(delta), -->
+<!--             q025 = quantile(delta, 0.025), -->
+<!--             q975 = quantile(delta, 0.975)) %>% ungroup() %>%  -->
+<!--   mutate(rr = ifelse(rr == 0, "No radiation benefit", "Radiation benefit")) -->
+
+
+<!-- rm(df_OS) -->
+
+
+<!-- plot1 <- filter(df_med,type == "OS") %>% -->
+<!--   ggplot() +  -->
+<!--   geom_line(aes(x = cycle, y = 1-median, linetype = intervention)) + -->
+<!--   facet_wrap(~rr) + -->
+<!--   theme_bw() +  -->
+<!--   ylab("\n Cumulative Incidence, all-cause mortality") +  -->
+<!--   xlab("Time from diagnosis, Years")  +  -->
+<!--     theme(legend.title =element_blank(),legend.position="top") + -->
+<!--   theme( panel.grid.major = element_blank(), -->
+<!-- panel.grid.minor = element_blank(), axis.line = element_line(colour = "black")) -->
+
+<!-- plot2_delta <- filter(df_delta,type == "OS" ) %>% -->
+<!--   mutate(t1 = "Median (95% CI)") %>%  -->
+<!--   ggplot() +  -->
+<!--   geom_line(aes(x = cycle, y = median, color = t1)) +  -->
+<!--   geom_ribbon(aes(x = cycle, ymin = q025, ymax = q975, fill = t1), alpha = 0.3,show.legend = T) + -->
+<!--   facet_wrap(~rr) + theme_bw() + -->
+<!--   ylab("Delta (Intervention - Control) \n Cumulative Incidence, all-cause mortality") +  -->
+<!--     xlab("Time from diagnosis, Years") +  -->
+<!--   theme(legend.title =element_blank(),legend.position="top")  + -->
+<!--   scale_color_manual(values = "black") + -->
+<!--   scale_fill_manual( values = "black") + -->
+<!--   theme( panel.grid.major = element_blank(), -->
+<!-- panel.grid.minor = element_blank(), axis.line = element_line(colour = "black")) -->
+
+
+
+<!-- fig2 <-grid.arrange(plot1, plot2_delta) -->
+
+<!-- fig2 -->
+<!-- ``` -->
+
+<!-- In text results -->
+
+<!-- ```{r} -->
+<!-- df_med %>%  -->
+<!--   filter(cycle == 20) %>% mutate(median = median*100) %>%  -->
+<!--   spread(intervention, median) %>%  -->
+<!--   arrange(rr, type) %>% filter(type == "OS" | type == "Fused") %>%   -->
+<!--   kable(digits = 1 )  -->
+<!-- ``` -->
+
+<!-- # Supp Fig 1 -->
+
+<!-- Supplementary Figure 1: Cumulative incidence of all-cause mortality for all fused patients, and for fused patients who progressed -->
+
+<!-- ```{r} -->
+<!-- plot2SM <-filter(df_delta,type != "OS" ) %>% -->
+<!--   mutate(type = factor(type, levels = c("Fused","FusedProg"), -->
+<!--                        labels = c("Fused patients", "Fused patients that progressed"))) %>%  -->
+<!--  mutate(t1 = "Median (95% CI)") %>%  -->
+<!--   ggplot() +  -->
+<!--   geom_line(aes(x = cycle, y = median, color = t1)) +  -->
+<!--   geom_ribbon(aes(x = cycle, ymin = q025, ymax = q975, fill = t1), alpha = 0.3,show.legend = T) + -->
+<!--   facet_wrap(~rr + type,) + theme_bw() + -->
+<!--   ylab("Delta (Intervention - Control) \n Cumulative Incidence, all-cause mortality") +  -->
+<!--     xlab("Time from diagnosis, Years") +  -->
+<!--   theme(legend.title =element_blank(),legend.position="top")  + -->
+<!--   scale_color_manual(values = "black") + -->
+<!--   scale_fill_manual( values = "black")  + -->
+<!--   theme( panel.grid.major = element_blank(), -->
+<!-- panel.grid.minor = element_blank(), axis.line = element_line(colour = "black")) -->
+
+<!-- plot2SM -->
+
+<!-- rm(fig2) -->
+<!-- ``` -->
+
+<!-- ## Figure 3  -->
+
+<!-- Create figure 3  -->
+
+<!-- First accounting for mortality  -->
+
+<!-- ```{r eval=T, message=FALSE, warning=FALSE, include=FALSE} -->
+<!-- res_CI <- list.files(paste0(fileloc, "/res_CI"),full.names = TRUE) -->
+<!-- res_OS <- list.files(paste0(fileloc, "/res_OS"),full.names = TRUE) -->
+
+<!-- res_CI_s <- list.files(paste0(fileloc, "/res_CI"),full.names = FALSE) -->
+<!-- res_OS_s <- list.files(paste0(fileloc, "/res_OS"),full.names = FALSE) -->
+
+<!-- res_OS <- res_OS[order(res_OS_s)] -->
+<!-- res_CI <- res_CI[order(res_CI_s)] -->
+
+
+<!-- res_short <- list.files(paste0(fileloc, "/res_CI"),full.names = F) -->
+<!-- res_short <- res_short[order(res_OS_s)] -->
+<!-- v_n <-c( "neurologic", "auditory", "visual", "stroke", "cardiovascular", "SN") -->
+
+<!-- ## first read in first thing  -->
+
+<!-- for( i in seq_along(res_short)){ -->
+<!--   if(i %% 10 == 0){message(i/length(res_short))} -->
+<!-- tempCI <- readRDS(res_CI[i]) -->
+<!-- tempOS <- readRDS(res_OS[i]) %>% rename(time = cycle) %>% filter(type == "OS") -->
+<!-- tempOS <-tempOS %>% group_by(type, sim , intervention, rr) %>%  -->
+<!--   mutate(OS_t1 = lag(OS, 1,1)) %>%  -->
+<!--   select(-type) -->
+
+
+<!-- tempCI <- tempCI %>%  -->
+<!--   left_join(tempOS, by = c("time", "sim", "intervention", "rr")) -->
+
+<!-- calcCI <- tempCI %>%  -->
+<!--   filter(state %in% v_n) %>% -->
+<!--     mutate(ci = (ceiling(ci*100000)*ceiling(OS*100000))/100000) %>%  -->
+<!--     mutate(ci = ceiling(ci*100000), -->
+<!--            OS = ceiling(OS*100000), -->
+<!--            OS_t1= ceiling(OS_t1*100000)/100000) %>% -->
+<!--   group_by(state, intervention, rr ) %>% -->
+<!--   mutate(ci = c(0,diff(ci,1))) %>%  -->
+<!--   mutate(mcf =  ci/OS, -->
+<!--          CI = mcf*OS_t1 -->
+<!--          ) %>%  -->
+<!--   mutate(cumCI = cumsum(CI))  %>% -->
+<!--   select(state, intervention ,rr, time,cumCI, sim ) %>% ungroup() -->
+
+<!-- for(state1 in v_n){ -->
+<!--   dir.create(path = here::here("05_report","1newCIcalc",state1),recursive = T) -->
+
+<!--      filter(calcCI, state == state1) %>% -->
+<!--       saveRDS(file = here::here("05_report","1newCIcalc",state1,"/",paste0(state1,i,"BIG.RDS"))) -->
+
+
+<!-- } -->
+
+<!-- } -->
+
+
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- store_toplot <- vector(mode = "list", length = length(v_n)) -->
+
+
+<!-- for(j in seq_along(v_n)){ -->
+<!--   message(j) -->
+
+<!--   list_files_instate <- list.files(here::here("05_report","1newCIcalc",v_n[j]),full.names = TRUE) -->
+
+<!-- big1   <- map_df(list_files_instate, readRDS) -->
+
+<!-- store_toplot[[j]] <- big1 %>%  -->
+<!--   group_by(intervention, state,rr) %>% -->
+<!--   group_by(intervention, state,rr) %>% -->
+<!--   mutate(cumCI = ifelse(is.nan(cumCI) , NA, cumCI  )) %>% -->
+<!--   fill(cumCI,.direction = "down") %>% -->
+<!--   group_by(intervention, state, rr,  time  ) %>% -->
+<!-- summarise(median = median(cumCI), -->
+<!--           q025 = quantile(cumCI, 0.025), -->
+<!--           q975 = quantile(cumCI, 0.975)) %>% ungroup() -->
+
+<!-- } -->
+
+<!-- unlink(here::here("05_report","1newCIcalc"),recursive = T) -->
+
+<!-- ``` -->
+
+<!-- ```{r} -->
+
+<!-- toplotCI <- do.call(rbind,store_toplot) -->
+
+<!-- plotCI <- toplotCI %>% ungroup() %>% -->
+<!--     mutate(intervention  = ifelse(intervention == "Norad_Fused", "Intervention","Control")) %>%  -->
+<!--     mutate(rr= ifelse(rr == 1, "Cherlow, et al.","No radiation benefit")) %>% -->
+<!--   ggplot() +  -->
+<!--   geom_line(aes(x = time, y = median, color = intervention)) +   geom_ribbon(aes(x = time, ymin = q025, ymax = q975 , fill = intervention), alpha = 0.3,show.legend = T) + -->
+<!--  facet_grid(rows =  vars(state) , cols =  vars(rr) ) + -->
+<!-- theme_bw() + -->
+<!--   ylab("Cumulative incidence, Treatment related AE") +  -->
+<!--     xlab("Time from diagnosis, Years") +  -->
+<!--   theme( panel.grid.major = element_blank(), -->
+<!-- panel.grid.minor = element_blank(), axis.line = element_line(colour = "black")) -->
+
+<!-- plotCI -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+
+<!-- dir.create(here::here("05_report","tempfold1")) -->
+<!-- res_CI <- list.files(paste0(fileloc, "/res_CI"),full.names = TRUE) -->
+<!-- res_OS <- list.files(paste0(fileloc, "/res_OS"),full.names = TRUE) -->
+
+<!-- res_CI_s <- list.files(paste0(fileloc, "/res_CI"),full.names = FALSE) -->
+<!-- res_OS_s <- list.files(paste0(fileloc, "/res_OS"),full.names = FALSE) -->
+
+<!-- res_OS <- res_OS[order(res_OS_s)] -->
+<!-- res_CI <- res_CI[order(res_CI_s)] -->
+
+
+<!-- res_short <- list.files(paste0(fileloc, "/res_CI"),full.names = F) -->
+<!-- res_short <- res_short[order(res_OS_s)]  -->
+
+<!-- list1 <- c("stroke_gen","cardiovascular_gen","SN_gen") -->
+<!-- list2 <- c("stroke","cardiovascular","SN") -->
+<!-- v_n <- c(list1,list2) -->
+
+<!-- ## first read in first thing  -->
+
+<!-- for( i in 1:length(res_short)){ -->
+<!--   if(i %% 10 == 0){message(i/length(res_short))}  -->
+<!--   tempCI <- readRDS(res_CI[i])  -->
+<!--   tempOS <- readRDS(res_OS[i]) %>%  -->
+<!--     rename(time = cycle) %>% filter(type == "OS") -->
+
+<!--   tempOS <-tempOS %>% group_by(type, sim , intervention, rr) %>% -->
+<!--   mutate(OS_t1 = lag(OS, 1,1)) %>% -->
+<!--   select(-type) -->
+
+
+<!-- tempCI <- tempCI %>% -->
+<!--   left_join(tempOS, by = c("time", "sim", "intervention", "rr")) -->
+
+<!-- ## Have TempCI joined with tempOS -->
+<!-- ## issue is that i calcualted CI = cumsum(mean(incidence*OS)) ##  mean(abs(mDur1[,ci_states[j]] - time_v[t1]) < tol)/per_alive[t1] ## cumsum(k1) ## Reversing that -->
+
+<!-- calCI <-tempCI %>% -->
+<!--   filter(state %in% v_n) %>% -->
+<!--   group_by(state, sim, intervention ,rr, type) %>%arrange(time) %>% -->
+<!--   mutate(i = c(0, diff(ci)), -->
+<!--          i = (i*100000)*OS, -->
+<!--          ) %>% ungroup() %>% -->
+<!--   mutate(state = case_when( -->
+<!-- state == list1[1] |state ==  list2[1] ~ list2[1], state == list1[2] |state ==  list2[2] ~ list2[2], state == list1[3] |state ==  list2[3] ~ list2[3] -->
+<!-- )) %>%  -->
+<!--    group_by(state, sim, intervention ,rr, type, time) %>% -->
+<!--   mutate( i = sum(i)) %>%  ungroup() %>%  -->
+<!--    group_by(state, sim, intervention ,rr, type) %>% -->
+<!--    mutate(mcf =  i /(OS*100000), -->
+<!--          CI = mcf*OS_t1 -->
+<!--          )  %>%  -->
+<!--     mutate(cumCI = cumsum(CI))  %>% -->
+<!--   select(state, intervention ,rr, time,cumCI, sim, type )  -->
+
+<!-- # trying to fix that cumulative incidence doesnt take into account mortality  -->
+
+
+<!--       saveRDS(file = here::here("05_report","tempfold1",paste0(i,"BIG.RDS")),object = calCI)  -->
+<!--       }  -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+
+<!-- file1 <- list.files(here::here("05_report","tempfold1"),full.names = T) -->
+
+<!-- bigdf<-map_df(file1, readRDS) -->
+
+<!-- bigdf %>% arrange(desc(cumCI)) -->
+
+<!-- bigdf %>%  -->
+<!--    mutate(rr = ifelse(rr == 0, "No radiation benefit", "Radiation benefit")) %>% -->
+<!--     mutate(intervention  = ifelse(intervention == "Targeted", "Intervention","Control")) %>% -->
+<!--   group_by(state, intervention, rr, time,type) %>%  -->
+<!--   summarise(mean = mean(cumCI), -->
+<!--             q025 = quantile(cumCI,0.025), -->
+<!--             q975 = quantile(cumCI,0.975)) %>%  -->
+
+<!--   ggplot() + -->
+<!--   facet_wrap(~state+ rr) + geom_line(aes(x = time, y= mean, color = intervention)) + -->
+<!--   geom_ribbon(aes(x = time, ymin = q025, ymax = q975, fill = intervention), alpha = 0.1)+ -->
+<!--   theme_bw() -->
+
+<!-- unlink(here::here("05_report","tempfold1"),recursive = T) -->
+
+<!-- ``` -->
+
+
+<!-- ```{r} -->
+<!-- icd_10_death <- c("O95", "O96", "O97", "R96", "R97", "R98", "R99") -->
+<!-- Df_full$icd_death <- rep(0, nrow(Df_full)) -->
+<!-- for (i in 1:nrow(Df_full)) { -->
+<!--   if (substr(Df_full$DIAG_CODE_1[i], 1, 3) %in% icd_10_death |  -->
+<!--       substr(Df_full$DIAG_CODE_2[i], 1, 3) %in% icd_10_death | -->
+<!--       substr(Df_full$DIAG_CODE_3[i], 1, 3) %in% icd_10_death | -->
+<!--       substr(Df_full$DIAG_CODE_4[i], 1, 3) %in% icd_10_death | -->
+<!--       substr(Df_full$DIAG_CODE_5[i], 1, 3) %in% icd_10_death ) { -->
+<!--     Df_full$icd_death[i] <- 1 -->
+<!--   }  -->
+<!-- } -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- icd_10_death <- c("O95", "O96", "O97", "R96", "R97", "R98", "R99") -->
+<!-- Df_full %>% select(substr(Df_full$DIAG_CODE_1[i], 1, 3) %in% icd_10_death |  -->
+<!--                    substr(Df_full$DIAG_CODE_2[i], 1, 3) %in% icd_10_death | -->
+<!--                    substr(Df_full$DIAG_CODE_3[i], 1, 3) %in% icd_10_death | -->
+<!--                    substr(Df_full$DIAG_CODE_4[i], 1, 3) %in% icd_10_death | -->
+<!--                    substr(Df_full$DIAG_CODE_5[i], 1, 3) %in% icd_10_death) -->
+<!-- ``` -->
+
+
+

@@ -52,7 +52,12 @@ gen_costs <- function(){
   Costs_testing.l = list(FISH       = 0, # One-time cost (Supp table 1)
                          Nanostring = 0) # One-time cost (Supp table 1)
   
-  Costs_trt.l = list(Targeted = 3958.42*inflat * (1-discount) ) # monthly
+  Costs_trt.l = list(Targeted = 3958.42*inflat * (1-discount), # debraf
+                     tram = 76.96 * 30.44 * 1.3269 * (151.2/136.0)) # monthly
+  
+  # 76.96/day from Petros on teams, 1.3269 is average USD to CAD exchange rate in 2019 (Bank of Canada)
+  # 30.44 days a month
+  # StatsCan CPI 2022 vs. 2019 
   
   return(list(Inpatient_Costs.l   = Inpatient_Costs.l,
               Outpatient_costs.l  = Outpatient_costs.l,

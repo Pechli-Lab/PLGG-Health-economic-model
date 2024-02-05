@@ -72,6 +72,14 @@ Probs <- function( M_it, D_m,  df.i, Vis_m, CycleLength, GlobT, EstPLGG, EstAE,
                                         tt          = tt,
                                         trt_dur     = trt_dur)
   }
+  # test
+  # t_instate   = plgg.timeinstate+ CycleLength; 
+  # Cycle1      = CycleLength;
+  # StateIndx   = plgg.char;
+  # FlexSurvRes = EstPLGG;
+  # inter       = inter;
+  # tt          = tt;
+  # trt_dur     = trt_dur
   
   ## Radiation Benefit
   if(!(is.data.frame(rad_benefit1))){ # baseline
@@ -165,11 +173,17 @@ m.p.it[!RadIndc,c("neurologic","auditory","visual","stroke","cardiovascular","SN
     }
   }
   
+  # Apply hazard ratio of AE for targeted (for those who had never experienced chemo/only targeted)
+  if (inter == "Targeted" & any(M_it=="pre_prog")) {
+    reduced_AErisk <- M_it == "pre_prog"
+    m.p.it[reduced_AErisk, "neurologic"]     <- 1-exp(-prob_to_rate(m.p.it[reduced_AErisk, "neurologic"])     * (1/2.5)) 
+    m.p.it[reduced_AErisk, "auditory"]       <- 1-exp(-prob_to_rate(m.p.it[reduced_AErisk, "auditory"])       * (1/1.6))
+    m.p.it[reduced_AErisk, "visual"]         <- 1-exp(-prob_to_rate(m.p.it[reduced_AErisk, "visual"])         * (1/3.7))
+    m.p.it[reduced_AErisk, "stroke"]         <- 1-exp(-prob_to_rate(m.p.it[reduced_AErisk, "stroke"])         * (1/2.4))
+    m.p.it[reduced_AErisk, "cardiovascular"] <- 1-exp(-prob_to_rate(m.p.it[reduced_AErisk, "cardiovascular"]) * (1/5.3))
+  }
   
-  
-  # Calculate the probability of reamining in current state
-  
-  
+  # Calculate the probability of remaining in current state
   # Calculating the probability of remaining in state as 
   # 1 - sum(probability i leave to another state) 
   
@@ -179,7 +193,7 @@ m.p.it[!RadIndc,c("neurologic","auditory","visual","stroke","cardiovascular","SN
     }
   }
   
-  # Ensuringthat if death state you can't leave.
+  # Ensuring that if death state you can't leave.
   
   
   m.p.it[M_it == "death_plgg",] <- 0

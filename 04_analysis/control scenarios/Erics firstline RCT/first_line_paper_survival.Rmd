@@ -26,7 +26,9 @@ p_load("here", "dplyr", "devtools", "gems", "flexsurv", "flexsurvcure", "survHE"
 p_load_gh("DARTH-git/darthtools")
 ```
 
-# 04 Digitized Data
+# Independent Reviewer
+
+## 04 Digitized Data
 
 Use the function `digitise()` to translate the digitised OS and PFS data into patient level information.
 
@@ -81,13 +83,14 @@ ggsurvplot(
   break.x.by = 2,
   ggtheme    = theme_bw(),       # Change ggplot2 theme
   xlab       = 'Time in months', # Change X-axis label
-  title      = "Survival curve for PFS, Control arm",
-  subtitle   = "Based on Kaplan-Meier estimates"
+  title      = "Kaplan-Meier survival curve for PFS, Control arm (Independent Reviewer)",
+  subtitle   = "Source: Bouffet et al., (NEJM 2023)"
 )
 ```
 
 ```{r}
-surv_data$Time <- surv_data$Time/12 # change time in months to years
+# surv_data$Time <- surv_data$Time/12 # change time in months to years
+IPD_PFS$time <- IPD_PFS$time/12 # change time in months to years
 # times <- seq(0,5,by=1/12)
 times <- 0:80
 mods <- c("exp", "weibull", "gamma", "lnorm", "llogis", "gompertz" ,"rps")
@@ -119,7 +122,7 @@ for (i in 1:N_sim) {
   fitted_PFS_chemo[[i]] <- fit_PFS$model.objects$models$`log-Normal`
   print(i)
 }
-save(fitted_PFS_chemo, file="fitted_PFS_control_firstline.RData")
+save(fitted_PFS_chemo, file="fitted_PFS_control_firstline_lnorm_100.RData")
 ```
 
 ## Targeted arm
@@ -173,13 +176,13 @@ ggsurvplot(
   break.x.by = 2,
   ggtheme    = theme_bw(),       # Change ggplot2 theme
   xlab       = 'Time in months', # Change X-axis label
-  title      = "Survival curve for PFS, Targeted arm",
-  subtitle   = "Based on Kaplan-Meier estimates"
+title      = "Kaplan-Meier survival curve for PFS, Targeted arm (Independent Reviewer)",
+  subtitle   = "Source: Bouffet et al., (NEJM 2023)"
 )
 ```
 
 ```{r}
-surv_data$Time <- surv_data$Time/12
+IPD_PFS$time <- IPD_PFS$time/12 # change time in months to years
 # times <- seq(0,5,by=1/12)
 times <- 0:80
 mods <- c("exp", "weibull", "gamma", "lnorm", "llogis", "gompertz" ,"rps")
@@ -194,7 +197,7 @@ choose_PFS <- rownames(GoF_PFS)[which.min(GoF_PFS$BIC)]; choose_PFS
 ```
 
 ```{r}
-mods=c("exp", "llogis")
+mods=c("exp", "lnorm")
 fit_PFS  <- fit.fun(time = "time", status = "event", data = IPD_PFS, times = times,
                     extrapolate = T, mods=mods)
 ```
@@ -211,7 +214,233 @@ for (i in 1:N_sim) {
   fitted_PFS_targeted[[i]] <- fit_PFS$model.objects$models$Exponential
   print(i)
 }
-save(fitted_PFS_targeted, file="fitted_PFS_targeted_firstline.RData")
+save(fitted_PFS_targeted, file="fitted_PFS_targeted_firstline_exp_100.RData")
+```
+
+```{r}
+N_sim <- 100
+fitted_PFS_targeted <- list()
+set.seed(1)
+for (i in 1:N_sim) {
+  ids <- sample(1:nrow(IPD_PFS), replace=T)
+  PFS_data_boot <- IPD_PFS[ids,]
+  fit_PFS <- fit.fun(time  = "time", status = "event", data = PFS_data_boot,
+                     times = times, extrapolate = T, mods=c("lnorm"))
+  fitted_PFS_targeted[[i]] <- fit_PFS$model.objects$models$`log-Normal`
+  print(i)
+}
+save(fitted_PFS_targeted, file="fitted_PFS_targeted_firstline_lnorm_100.RData")
+```
+
+# Investigator Assessment
+
+## 04 Digitized Data
+
+Use the function `digitise()` to translate the digitised OS and PFS data into patient level information.
+
+## Control arm
+
+```{r}
+time_interval <- seq(0, 36, by = 2)
+at_risk <- c(37,28,22,22,16,14,13,11,11,11,6,6,4,3,2,1,0,0,0)
+surv_data <- read.csv("Eric NEJM investigator digitized.csv", header = T)
+surv_data <- surv_data[surv_data$curve==1,]
+surv_data$St <- surv_data$St/100
+surv_data <- data.frame(k = 1:nrow(surv_data),
+                        Time = surv_data$time,
+                        Sk = surv_data$St)
+write.table(surv_data, file = "first_line_PFS_curve_control_investigator.txt", row.names = F)
+surv_data <- read.table("first_line_PFS_curve_control_investigator.txt", header = T)
+surv_times <- surv_data$Time
+
+n_risk_table <- create_at_risk_table(survival_time = surv_times,
+                                     Years = time_interval,
+                                     AtRisk = at_risk)
+write.table(n_risk_table, "first_line_PFS_risktable_control_investigator.txt", row.names = F)
+```
+
+```{r, results="hide"}
+# Create IPD and KM data for the PFS curves (there have been 99 events in the cohort)
+digitise(surv_inp   = "first_line_PFS_curve_control_investigator.txt", 
+         nrisk_inp  = "first_line_PFS_risktable_control_investigator.txt", 
+         km_output  = "first_line_PFS_KM_control_investigator.txt", 
+         ipd_output = "first_line_PFS_IPD_control_investigator.txt")
+
+# Link the IPD files across the two arms of the trial for OS and PFS
+IPD_PFS <- make.ipd(ipd_files = c("first_line_PFS_IPD_control_investigator.txt"), ctr = 1,
+                    var.labs  = c("time","event","arm"))
+IPD_PFS <- IPD_PFS %>% select(-arm)
+```
+
+```{r}
+library(survival)
+library(survminer)
+# Kaplan-Meier fit for PFS
+KM_PFS <- survfit(Surv(time = time, event = event) ~ 1, data = IPD_PFS)
+# plot KM for PFS
+ggsurvplot(
+  KM_PFS,
+  data       = IPD_PFS,
+  size       = 1,                # change line size
+  conf.int   = FALSE,            # Add confidence interval
+  pval       = F,                # Add p-value
+  risk.table = T,                # Add risk table
+  risk.table.height = 0.25,      # Useful to change when you have multiple groups
+  break.x.by = 2,
+  ggtheme    = theme_bw(),       # Change ggplot2 theme
+  xlab       = 'Time in months', # Change X-axis label
+  title      = "Kaplan-Meier survival curve for PFS, Control arm (Invesigator Assessment)",
+  subtitle   = "Source: Bouffet et al., (NEJM 2023)"
+)
+```
+
+```{r}
+# surv_data$Time <- surv_data$Time/12 # change time in months to years
+IPD_PFS$time <- IPD_PFS$time/12 # change time in months to years
+# times <- seq(0,5,by=1/12)
+times <- 0:3
+mods <- c("exp", "weibull", "gamma", "lnorm", "llogis", "gompertz" ,"rps")
+fit_PFS  <- fit.fun(time = "time", status = "event", data = IPD_PFS, times = times,
+                    extrapolate = T, mods = mods) 
+```
+
+```{r}
+GoF_PFS <- data.frame(AIC = fit_PFS$AIC, BIC = fit_PFS$BIC)
+choose_PFS <- rownames(GoF_PFS)[which.min(GoF_PFS$AIC)]; choose_PFS
+choose_PFS <- rownames(GoF_PFS)[which.min(GoF_PFS$BIC)]; choose_PFS
+```
+
+```{r}
+mods=c("lnorm", "exp")
+fit_PFS  <- fit.fun(time = "time", status = "event", data = IPD_PFS, times = times,
+                    extrapolate = T, mods=mods) 
+```
+
+```{r}
+N_sim <- 100
+fitted_PFS_chemo <- list()
+set.seed(1)
+for (i in 1:N_sim) {
+  ids <- sample(1:nrow(IPD_PFS), replace=T)
+  PFS_data_boot <- IPD_PFS[ids,]
+  fit_PFS <- fit.fun(time  = "time", status = "event", data = PFS_data_boot,
+                     times = times, extrapolate = T, mods=c("lnorm"))
+  fitted_PFS_chemo[[i]] <- fit_PFS$model.objects$models$`log-Normal`
+  print(i)
+}
+save(fitted_PFS_chemo, file="fitted_PFS_control_firstline_investigator_lnorm_100.RData")
+```
+
+## Targeted arm
+
+```{r}
+time_interval <- seq(0, 36, by = 2)
+at_risk <- c(73,68,68,67,58,52,47,39,38,27,24,18,13,11,5,5,1,1,0)
+surv_data <- read.csv("Eric NEJM investigator digitized.csv", header = T)
+surv_data$St <- surv_data$St/100
+surv_data <- surv_data[surv_data$curve==2,]
+surv_data <- data.frame(k = 1:nrow(surv_data),
+                        Time = surv_data$time,
+                        Sk = surv_data$St)
+write.table(surv_data, file = "first_line_PFS_curve_targeted_investigator.txt", row.names = F)
+surv_data <- read.table("first_line_PFS_curve_targeted_investigator.txt", header = T)
+surv_times <- surv_data$Time
+
+n_risk_table <- create_at_risk_table(survival_time = surv_times,
+                                     Years = time_interval,
+                                     AtRisk = at_risk)
+write.table(n_risk_table, "first_line_PFS_risktable_targeted_investigator.txt", row.names = F)
+```
+
+```{r, results="hide"}
+# Create IPD and KM data for the PFS curves (there have been 99 events in the cohort)
+digitise(surv_inp   = "first_line_PFS_curve_targeted_investigator.txt",
+         nrisk_inp  = "first_line_PFS_risktable_targeted_investigator.txt",
+         km_output  = "first_line_PFS_KM_targeted_investigator.txt",
+         ipd_output = "first_line_PFS_IPD_targeted_investigator.txt")
+
+# Link the IPD files across the two arms of the trial for OS and PFS
+IPD_PFS <- make.ipd(ipd_files = c("first_line_PFS_IPD_targeted_investigator.txt"), ctr = 1,
+                    var.labs  = c("time","event","arm"))
+IPD_PFS <- IPD_PFS %>% select(-arm)
+```
+
+```{r}
+library(survival)
+library(survminer)
+# Kaplan-Meier fit for PFS
+KM_PFS <- survfit(Surv(time = time, event = event) ~ 1, data = IPD_PFS)
+# plot KM for PFS
+ggsurvplot(
+  KM_PFS,
+  data       = IPD_PFS,
+  size       = 1,                # change line size
+  conf.int   = FALSE,            # Add confidence interval
+  pval       = F,                # Add p-value
+  risk.table = T,                # Add risk table
+  risk.table.height = 0.25,      # Useful to change when you have multiple groups
+  break.x.by = 2,
+  ggtheme    = theme_bw(),       # Change ggplot2 theme
+  xlab       = 'Time in months', # Change X-axis label
+title      = "Kaplan-Meier survival curve for PFS, Targeted arm (Investigator Assessment)",
+  subtitle   = "Source: Bouffet et al., (NEJM 2023)"
+)
+```
+
+```{r}
+IPD_PFS$time <- IPD_PFS$time/12 # change time in months to years
+# times <- seq(0,5,by=1/12)
+times <- 0:3
+mods <- c("exp", "weibull", "gamma", "lnorm", "llogis", "gompertz" ,"rps")
+fit_PFS  <- fit.fun(time = "time", status = "event", data = IPD_PFS, times = times,
+                    extrapolate = T, mods = mods)
+```
+
+```{r}
+GoF_PFS <- data.frame(AIC = fit_PFS$AIC, BIC = fit_PFS$BIC)
+choose_PFS <- rownames(GoF_PFS)[which.min(GoF_PFS$AIC)]; choose_PFS
+choose_PFS <- rownames(GoF_PFS)[which.min(GoF_PFS$BIC)]; choose_PFS
+```
+
+```{r}
+mods=c("exp", "lnorm", "llogis")
+fit_PFS  <- fit.fun(time = "time", status = "event", data = IPD_PFS, times = times,
+                    extrapolate = T, mods=mods)
+```
+
+```{r}
+N_sim <- 100
+fitted_PFS_targeted <- list()
+set.seed(1)
+for (i in 1:N_sim) {
+  ids <- sample(1:nrow(IPD_PFS), replace=T)
+  PFS_data_boot <- IPD_PFS[ids,]
+  fit_PFS <- fit.fun(time  = "time", status = "event", data = PFS_data_boot,
+                     times = times, extrapolate = T, mods=c("exp"))
+  fitted_PFS_targeted[[i]] <- fit_PFS$model.objects$models$Exponential
+  print(i)
+}
+save(fitted_PFS_targeted, file="fitted_PFS_targeted_firstline_investigator_exp_100.RData")
+```
+
+```{r}
+N_sim <- 100
+fitted_PFS_targeted <- list()
+set.seed(1)
+for (i in 1:N_sim) {
+  ids <- sample(1:nrow(IPD_PFS), replace=T)
+  PFS_data_boot <- IPD_PFS[ids,]
+  fit_PFS <- fit.fun(time  = "time", status = "event", data = PFS_data_boot,
+                     times = times, extrapolate = T, mods=c("lnorm"))
+  fitted_PFS_targeted[[i]] <- fit_PFS$model.objects$models$`log-Normal`
+  print(i)
+}
+save(fitted_PFS_targeted, file="fitted_PFS_targeted_firstline_investigator_lnorm_100.RData")
+```
+
+
+```{r}
+
 ```
 
 

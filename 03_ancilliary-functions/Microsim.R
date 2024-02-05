@@ -1,6 +1,6 @@
 Microsimulation <- function(n.i, n.y, cyc.t, monitor,seed_n, df_char,Estimated_plgg,
                             Estimated_ae,AE_outside_mat,PrMortCardio_mat, SRS_mat1, cost_input,
-                            util_input,uindx, rad_benefit, d.c,d.e,sim_numi, rri, loc_out1, trt_duration ){
+                            util_input,uindx, rad_benefit, d.c,d.e,sim_numi, rri, loc_out1, trt_duration, combo ){
   # input:  
   # n.i: number of individuals
   # n.y: time horizon
@@ -94,6 +94,11 @@ Microsimulation <- function(n.i, n.y, cyc.t, monitor,seed_n, df_char,Estimated_p
                     ncol = n.s,
                     dimnames = list(paste("ind", 1:n.i, sep = " "), v.n), data = F) 
     
+    # Tracking AE events (each cycle track the proportion of 1st entries)
+    v.n.AE <- v.n[-c(1:4)]
+    m.AE <- matrix(nrow = n.i, 
+                   ncol = length(v.n.AE),
+                   dimnames = list(paste("ind", 1:n.i, sep = " "), v.n.AE) ,data = 0)
     
     # Creating curent_age vector (Aware of spelling mistake but propogated through sub functions)
     # which is updated with the current age
@@ -113,8 +118,16 @@ Microsimulation <- function(n.i, n.y, cyc.t, monitor,seed_n, df_char,Estimated_p
                                     Outpatient_costs = Outpatient_costs.l,
                                     m_Dur            = m.Dur,
                                     curent_age_v     = curent_age) 
+    
+    cost_trt <- Costs_trt.l$Targeted
+    if (combo == TRUE) {
+      cost_trt <- Costs_trt.l$Targeted + Costs_trt.l$tram
+    }
     if (intervention == "Targeted") { 
-      m.Costs.trt[,1] <- Costs_trt.l$Targeted
+      m.Costs.trt[,1] <- cost_trt
+    }
+    if (intervention == "Targeted" & combo == TRUE) {
+      m.Costs.trt[df_char$AgeDx >=6, 1] <- m.Costs.trt[df_char$AgeDx >=6, 1] + Costs_trt.l$tram # those >= 6 get another dose
     }
     
     # Utilities first cycle
@@ -142,6 +155,9 @@ Microsimulation <- function(n.i, n.y, cyc.t, monitor,seed_n, df_char,Estimated_p
       # m.Costs.rad[RadIndc, t + 1] <- 7199.34 # value given by Petros on Teams
       # df_char$Radiation[rad_switch] <- 1
       
+      # Check if patients have progressed and went to chemo
+      reduced_AErisk <- m.M[,t] == "pre_prog"
+      
       # Create m.p: transition matrices for next period  
       m.p <- Probs(M_it              = m.M[,t], 
                    D_m               = m.Dur, 
@@ -159,6 +175,23 @@ Microsimulation <- function(n.i, n.y, cyc.t, monitor,seed_n, df_char,Estimated_p
                    inter             = intervention,
                    tt                = t,
                    trt_dur           = trt_duration)
+      #test
+      # M_it              = m.M[,t];
+      # D_m               = m.Dur;
+      # df.i              = df_char;
+      # Vis_m             = m.Vis ;
+      # CycleLength       = cyc.t;
+      # GlobT             = v.time[t];
+      # EstPLGG           = Estimated_plgg ;
+      # EstAE             = Estimated_ae;
+      # AE_outside_mat1   = AE_outside_mat;
+      # PrMortCardio_mat1 = PrMortCardio_mat;
+      # rad_benefit1      = rad_benefit;
+      # SRS_mat           = SRS_mat1;
+      # curent_age_v      = curent_age;
+      # inter             = intervention;
+      # tt                = t;
+      # trt_dur           = trt_duration
       
       # if(t == 100){undebug(Probs)}
       
@@ -177,6 +210,13 @@ Microsimulation <- function(n.i, n.y, cyc.t, monitor,seed_n, df_char,Estimated_p
       for(j in v.n){
         m.Vis[ m.M[, t + 1] == j ,j] <- T
         m.Dur[ m.Vis[ , j ],j] <- m.Dur[  m.Vis[ , j ] , j ] + cyc.t
+      }
+      
+      # Capture first time patient enters an AE state
+      m.Vis.AE <- m.Vis[,-c(1:4)]
+      m.Vis.AE[m.Vis.AE==T] <- t # actual cycle, starts at cycle 1 not 0 for this thing only
+      for (j in 1:ncol(m.AE)){
+        m.AE[m.AE[,j]==0,j] <- m.Vis.AE[m.AE[,j]==0,j]
       }
       
       # Creating radiation decision for those that progress
@@ -203,6 +243,9 @@ Microsimulation <- function(n.i, n.y, cyc.t, monitor,seed_n, df_char,Estimated_p
                                             m_Dur            = m.Dur,
                                             curent_age_v     = curent_age)
         
+        if (intervention == "Targeted") {
+          m.Costs.plgg[m.M[,t+1] == "pre_prog", t +1 ] <- 0 # for targeted arm, incur no PLGG costs while under targeted therapy
+        }
         
         m.Costs.ae[, t +1 ] <- Costs_AE(AE_cost = AE_cost.l,m_Dur = m.Dur)
         
@@ -258,9 +301,17 @@ Microsimulation <- function(n.i, n.y, cyc.t, monitor,seed_n, df_char,Estimated_p
       
       # Cost of treatment
       if (intervention == "Targeted" & t <= 24 & trt_duration == 2) { # only stays on treatment for 2 years
-        m.Costs.trt[alive_indc & df_char$Radiation == 0, t+1] <- Costs_trt.l$Targeted
+        m.Costs.trt[alive_indc & df_char$Radiation == 0, t+1] <- cost_trt
+        if (combo == TRUE){
+          m.Costs.trt[alive_indc & df_char$Radiation == 0 & curent_age >=6, t+1] <- 
+            m.Costs.trt[alive_indc & df_char$Radiation == 0 & curent_age >=6, t+1] + Costs_trt.l$tram
+        }
       } else if (intervention == "Targeted" & trt_duration == 1) { # lifetime treatment
-        m.Costs.trt[alive_indc & df_char$Radiation == 0, t+1] <- Costs_trt.l$Targeted
+        m.Costs.trt[alive_indc & df_char$Radiation == 0, t+1] <- cost_trt
+        if (combo == TRUE){
+          m.Costs.trt[alive_indc & df_char$Radiation == 0 & curent_age >=6, t+1] <- 
+            m.Costs.trt[alive_indc & df_char$Radiation == 0 & curent_age >=6, t+1] + Costs_trt.l$tram
+        }
       }
       
       # Utilities
@@ -269,7 +320,7 @@ Microsimulation <- function(n.i, n.y, cyc.t, monitor,seed_n, df_char,Estimated_p
                                       m_V       = m.Vis)
       
       if(t %% (n.t/10) == 0 & monitor) {
-        message(paste("\r", round(t/(n.t), digits = 2),"%", "sim: ",sim_numi,print(pryr::mem_used()) ))}
+        message(paste("\r", round(t/(n.t)*100, digits = 2),"%", "sim: ",sim_numi,print(pryr::mem_used()) ))}
       #message(t)
       
       
@@ -289,6 +340,23 @@ Microsimulation <- function(n.i, n.y, cyc.t, monitor,seed_n, df_char,Estimated_p
     # 
     # event_df  <-data.frame(id = ind_v, time = m.DurV, state = event1)
     
+    # Track AEs and PLGG over time
+    calculate_proportions <- function(column) {
+      value_counts <- table(column)
+      proportions <- value_counts / length(column)
+      return(proportions)
+    }
+    prop_list <- apply(m.M, 2, calculate_proportions)
+    prop_df <- bind_rows(prop_list, .id = "cycle") 
+    prop_df$cycle <- as.numeric(prop_df$cycle)
+    prop_df <- as.data.frame(prop_df)
+    prop_df[is.na(prop_df)] <- 0
+    prop_df$intervention <- intervention
+    assign(paste0(intervention,"_trace"), prop_df)
+    
+    df.AE <- as.data.frame(m.AE)
+    df.AE$intervention <- intervention
+    assign(paste0(intervention, "_AE"), df.AE)
     
     t1 <- sum_function(sim_num       = sim_numi,
                        intervention1 = intervention,
@@ -315,11 +383,15 @@ Microsimulation <- function(n.i, n.y, cyc.t, monitor,seed_n, df_char,Estimated_p
   res_OS    <- rbind(Targeted$res_OS,    SoC$res_OS)
   res_tmat  <- rbind(Targeted$res_tmat,  SoC$res_tmat)
   res_CI    <- rbind(Targeted$res_CI,    SoC$res_CI)
+  trace     <- rbind(Targeted_trace,     SoC_trace)
+  AE_track  <- rbind(Targeted_AE,        SoC_AE)
   return(list(res_rad   = res_rad,
               res_model = res_model,
               res_OS    = res_OS,
               res_tmat  = res_tmat,
-              res_CI    = res_CI
+              res_CI    = res_CI,
+              trace     = trace,
+              AE_track  = AE_track
   ))
   
   # return(paste0("completed",sim_numi))

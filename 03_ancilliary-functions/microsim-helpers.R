@@ -49,7 +49,7 @@ Fun.GenI<- function(loc.analysis.set,NumToGen, Seed_n1){
 # SurvProbFun ####
 # This is the guts of the flexsurv summary function made to create probabilities
 # that are vectorized. Not commented if interested run once with debug
-SurvProbFun <- function(object, t , cycle1){
+SurvProbFun <- function(object, t , cycle1, calib = FALSE){
   start  = t - cycle1 
   x <- object
   dat <- x$data
@@ -71,6 +71,9 @@ SurvProbFun <- function(object, t , cycle1){
   
   basepars.mat <- flexsurv:::add.covs(x, x$res.t[dlist$pars, "est"], 
                                       beta, X[1, , drop = FALSE], transform = FALSE)
+  if (calib == T){ # calibrate risk of dying from plgg
+    basepars.mat <- basepars.mat/100
+  }
   basepars <- as.list(as.data.frame(basepars.mat))
   fncall[dlist$pars] <- basepars
   y <- do.call(fn, fncall)  
@@ -96,7 +99,7 @@ SurvProbFun <- function(object, t , cycle1){
 
 # rows 1,3,5,7,9 are associated with Fusion == 0
 
-Probs.plggWT <- function(t_instate,StateIndx, Cycle1, FlexSurvRes, inter, tt, trt_dur){
+Probs.plggWT <- function(t_instate,StateIndx, Cycle1, FlexSurvRes, inter, tt, trt_dur, calib){
   # Inputs
   # t_instate: time in current state, a vector
   # StateIndx: what state are they in
@@ -119,21 +122,23 @@ Probs.plggWT <- function(t_instate,StateIndx, Cycle1, FlexSurvRes, inter, tt, tr
 
   if(any(StateIndx ==  "pre_prog")){
     state1.log <- StateIndx ==  "pre_prog"
-    Prob.mat[state1.log,2] <- SurvProbFun(object = FlexSurvRes$flexobj[[arm]][[1]], t = t_instate[state1.log], cycle1 = Cycle1)
-    Prob.mat[state1.log,4] <- SurvProbFun(object = FlexSurvRes$flexobj[[3]][[1]],   t = t_instate[state1.log], cycle1 = Cycle1)
+    Prob.mat[state1.log,2] <- SurvProbFun(object = FlexSurvRes$flexobj[[arm]][[1]], t = t_instate[state1.log], cycle1 = Cycle1) # preprog to prog1
+    Prob.mat[state1.log,4] <- SurvProbFun(object = FlexSurvRes$flexobj[[4]][[1]],   t = t_instate[state1.log], cycle1 = Cycle1, calib = F) # preprog to death
+    #Prob.mat[state1.log,4] <- SurvProbFun(object = FlexSurvRes$flexobj[[3]][[1]],   t = t_instate[state1.log], cycle1 = Cycle1, calib = F) # preprog to death
   }
   
   if(any(StateIndx ==   "prog1")){
     state2.log <- StateIndx ==   "prog1"
-    Prob.mat[state2.log,3] <- SurvProbFun(object = FlexSurvRes$flexobj[[5]][[1]], t = t_instate[state2.log], cycle1 = Cycle1)
-    Prob.mat[state2.log,4] <- SurvProbFun(object = FlexSurvRes$flexobj[[7]][[1]], t = t_instate[state2.log], cycle1 = Cycle1)
+    Prob.mat[state2.log,3] <- SurvProbFun(object = FlexSurvRes$flexobj[[10]][[1]], t = t_instate[state2.log], cycle1 = Cycle1) # prog1 to prog2
+    Prob.mat[state2.log,4] <- SurvProbFun(object = FlexSurvRes$flexobj[[4]][[1]], t = t_instate[state2.log], cycle1 = Cycle1, calib = F)  # prog 1 to death
+    #Prob.mat[state2.log,4] <- SurvProbFun(object = FlexSurvRes$flexobj[[7]][[1]], t = t_instate[state2.log], cycle1 = Cycle1, calib = F)  # prog 1 to death
   }
   
   if(any(StateIndx ==   "prog2")){
     state3.log <- StateIndx ==   "prog2"
-    Prob.mat[state3.log,4] <- SurvProbFun(object = FlexSurvRes$flexobj[[9]][[1]], t = t_instate[state3.log], cycle1 = Cycle1)
+    #Prob.mat[state3.log,4] <- SurvProbFun(object = FlexSurvRes$flexobj[[4]][[1]], t = t_instate[state3.log], cycle1 = Cycle1, calib = F)  # prog2 to death
+    Prob.mat[state3.log,4] <- SurvProbFun(object = FlexSurvRes$flexobj[[9]][[1]], t = t_instate[state3.log], cycle1 = Cycle1)  # prog2 to death
   }
-  
   return(Prob.mat)
 }
 

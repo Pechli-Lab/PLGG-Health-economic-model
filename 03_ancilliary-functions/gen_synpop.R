@@ -23,7 +23,11 @@ gen_synpop <- function( n1=  100000, deter = T){
                                         -0.005295126, 0.0005518633, 0.0001718476,
                                         -0.02501394, 0.0001718476, 0.04914024), nrow = 3) )
     
-    AgeDx = round(runif(n = n1, min = 0,max = 18))
+    #AgeDx = round(runif(n = n1, min = 0,max = 18))
+    ages_under_6 <- runif(n1 * 0.27, min = 0, max = 6) # 27% < 6, Petros on teams
+    ages_over_6 <- runif(n1 - length(ages_under_6), min = 6, max = 18)
+    AgeDx <- c(ages_under_6, ages_over_6)
+    
     o1 <- exp(cbind(1, AgeDx) %*% t(coef1))
     Sex = rbinom(n1,1, prob = o1/(1+o1))
     o2 <- exp(cbind(1, AgeDx,Sex) %*% t(coef2))

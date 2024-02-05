@@ -1,0 +1,113 @@
+---
+title: "Survival Analysis Chart Audit Data"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+library(tidyverse)
+library(lubridate)
+library(survival)
+library(flexsurv)
+library(survminer)
+library(here)
+library(darthtools)
+library(data.table)
+```
+
+- date last FU CCO gone
+- age_diag same as age_diag_years
+
+```{r}
+loc_here <- getwd()
+# df0 <- read_csv(paste0(loc_here, "02_data/PLGG_targeted_chartaudit_form.csv"), skip=1)
+# df <- read_csv("plgg_cea_controls.csv")
+df <- read_csv("PLGG_targetedtherapy_CEA_Petros_Nov2023_firstline.csv")
+df$status <- ifelse(df$secondprogress   == 1 | df$death == 1, 1 ,0)
+df$time <- df$TimetoOutcome_days /365 # change time in days to in years
+```
+
+Kaplan-Meier estimates of PFS
+
+```{r}
+# Kaplan-Meier fit for PFS
+KM_PFS <- survfit(Surv(time = time, event = status) ~ 1, data = df)
+# plot KM for PFS
+ggsurvplot(
+  KM_PFS,
+  data       = df,
+  size       = 1,                # change line size
+  conf.int   = FALSE,            # Add confidence interval
+  pval       = F,                # Add p-value
+  risk.table = T,                # Add risk table
+  risk.table.height = 0.25,      # Useful to change when you have multiple groups
+  ggtheme    = theme_bw(),       # Change ggplot2 theme
+  xlab       = 'Time in years', # Change X-axis label
+  title      = "Kaplan-Meier survival curve for PFS, Control arm",
+  subtitle   = "Source: SickKids (first-line)"
+)
+```
+
+# Fit survival curves:
+
+*Control arm:*
+
+```{r}
+times <- 0:80
+mods <- c("exp", "weibull", "gamma", "lnorm", "llogis", "gengamma", "rps")
+fit_control <- fit.fun(time="time", status="status", mods=mods, 
+                       data=df %>% as.data.frame(), times=times,
+                       extrapolate = T) 
+a <- fit_control$plot
+a$plot <- a$plot + labs(subtitle="Control arm (n=34)") + scale_x_continuous(breaks=seq(0,80,10))
+a$plot
+```
+
+Choose best-fitting survival model:
+
+```{r}
+GoF_control <- data.frame(AIC = fit_control$AIC, BIC = fit_control$BIC)
+choose_PFS_AIC_control <- rownames(GoF_control)[which.min(GoF_control$AIC)]; choose_PFS_AIC_control
+choose_PFS_BIC_control <- rownames(GoF_control)[which.min(GoF_control$BIC)]; choose_PFS_BIC_control
+```
+
+```{r}
+mods <- c("gamma", "exp")
+fit_control <- fit.fun(time="time", status="status", mods=mods, 
+                       data=df %>% as.data.frame(), times=times,
+                       extrapolate = T) 
+a1 <- fit_control$plot
+a1$plot <- a1$plot + labs(subtitle="Control arm (n=34), best-fitting curve") + 
+  scale_x_continuous(breaks=seq(0,80,10))
+a1$plot
+```
+
+Calculate transition probabilities (prog 1 to prog 2):
+
+```{r}
+best_model_control <- fit_control$model.objects$models$`Exponential`
+surv_probs_control <- surv_prob(best_model_control, times = times) # surv probs (not having 2nd prog) from prog 1
+trans_probs_control <- trans_prob(surv_probs_control) # transition probs from prog 1 to prog 2
+```
+
+Bootstrap for microsim:
+
+```{r}
+N_sim <- 100
+fitted_PFS_chemo <- list()
+set.seed(1)
+for (i in 1:N_sim) {
+  ids <- sample(1:nrow(df), replace=T)
+  PFS_data_boot <- df[ids,]
+  fit_PFS <- fit.fun(time  = "time", status = "status", 
+                     data = PFS_data_boot %>% as.data.frame(),
+                     times = times, extrapolate = T, mods=c("exp"))
+  fitted_PFS_chemo[[i]] <- fit_PFS$model.objects$models$Exponential
+  print(i)
+}
+save(fitted_PFS_chemo, file="fitted_PFS_control_sk_firstline_exp_100.RData")
+```
+
+```{r}
+
+```

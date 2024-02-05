@@ -1,0 +1,115 @@
+---
+title: "PLGG OS (prog to death) adjustment"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, eval = TRUE)
+rm(list = ls())     # clear memory (removes all the variables from the workspace)
+options(scipen=999) # disable scientific notation
+```
+
+```{r, warning=F, message=F}
+if (!require('pacman')) install.packages('pacman'); library(pacman) # use this package to conveniently install other packages
+# load (install if required) packages from CRAN
+p_load("here", "dplyr", "devtools", "gems", "flexsurv", "flexsurvcure", "survHE", "survminer", "ggplot2", "msm", "igraph", "mstate", "reshape2", "knitr", "abind", "dampack", "data.table", "tm")  
+
+# load (install if required) packages from GitHub
+# install_github("DARTH-git/darthtools", force = TRUE) Uncomment if there is a newer version
+p_load_gh("DARTH-git/darthtools")
+```
+
+# 04 Digitized Data
+
+Use the function `digitise()` to translate the digitised OS and PFS data into patient level information.
+
+## Control arm
+
+```{r}
+time_interval <- c(0,5,10,15,20,25,30)
+at_risk <- c(109,45,23,16,9,2,0)
+surv_data <- read.csv("plgg_os_adjust.csv", header = T)
+surv_data <- data.frame(k = 1:nrow(surv_data),
+                        Time = surv_data$time,
+                        Sk = surv_data$St)
+write.table(surv_data, file = "plgg_os_adjust.txt", row.names = F)
+surv_data <- read.table("plgg_os_adjust.txt", header = T)
+surv_times <- surv_data$Time
+n_risk_table <- create_at_risk_table(survival_time = surv_times,
+                                     Years = time_interval,
+                                     AtRisk = at_risk)
+write.table(n_risk_table, "plgg_os_adjust_risktable.txt", row.names = F)
+```
+
+```{r, results="hide"}
+# Create IPD and KM data for the PFS curves (there have been 99 events in the cohort)
+digitise(surv_inp   = "plgg_os_adjust.txt", 
+         nrisk_inp  = "plgg_os_adjust_risktable.txt", 
+         km_output  = "plgg_os_KM.txt", 
+         ipd_output = "plgg_os_IPD.txt")
+
+# Link the IPD files across the two arms of the trial for OS and PFS
+IPD_PFS <- make.ipd(ipd_files = c("plgg_os_IPD.txt"), ctr = 1,
+                    var.labs  = c("time","event","arm"))
+IPD_PFS <- IPD_PFS %>% select(-arm)
+```
+
+```{r}
+library(survival)
+library(survminer)
+# Kaplan-Meier fit for PFS
+KM_PFS <- survfit(Surv(time = time, event = event) ~ 1, data = IPD_PFS)
+# plot KM for PFS
+ggsurvplot(
+  KM_PFS,
+  data       = IPD_PFS,
+  size       = 1,                # change line size
+  conf.int   = FALSE,            # Add confidence interval
+  pval       = F,                # Add p-value
+  risk.table = F,                # Add risk table
+  risk.table.height = 0.25,      # Useful to change when you have multiple groups
+  break.x.by = 2,
+  ggtheme    = theme_bw(),       # Change ggplot2 theme
+  xlab       = 'Time in years', # Change X-axis label
+  title      = "Kaplan-Meier survival curve for OS, BRAF V600E patients",
+  subtitle   = "Source: "
+)
+```
+
+```{r}
+# times <- seq(0,5,by=1/12)
+times <- 0:80
+mods <- c("exp", "weibull", "gamma", "lnorm", "llogis", "gompertz" ,"rps")
+fit_PFS  <- fit.fun(time = "time", status = "event", data = IPD_PFS, times = times,
+                    extrapolate = T, mods = mods) 
+```
+
+```{r}
+GoF_PFS <- data.frame(AIC = fit_PFS$AIC, BIC = fit_PFS$BIC)
+choose_PFS <- rownames(GoF_PFS)[which.min(GoF_PFS$AIC)]; choose_PFS
+choose_PFS <- rownames(GoF_PFS)[which.min(GoF_PFS$BIC)]; choose_PFS
+```
+
+```{r}
+mods=c("exp")
+fit_PFS  <- fit.fun(time = "time", status = "event", data = IPD_PFS, times = times,
+                    extrapolate = T, mods=mods) 
+```
+
+```{r}
+N_sim <- 100
+fitted_os_adjusted <- list()
+set.seed(1)
+for (i in 1:N_sim) {
+  ids <- sample(1:nrow(IPD_PFS), replace=T)
+  PFS_data_boot <- IPD_PFS[ids,]
+  fit_PFS <- fit.fun(time  = "time", status = "event", data = PFS_data_boot,
+                     times = times, extrapolate = T, mods=c("exp"))
+  fitted_os_adjusted[[i]] <- fit_PFS$model.objects$models$Exponential
+  print(i)
+}
+save(fitted_os_adjusted, file="fitted_plgg_os_adjust_exp_100.RData")
+```
+
