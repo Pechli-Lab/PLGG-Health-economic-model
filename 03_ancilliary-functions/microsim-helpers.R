@@ -141,6 +141,9 @@ Probs.plggWT <- function(t_instate,StateIndx, Cycle1, FlexSurvRes, inter, tt, tr
   }
   return(Prob.mat)
 }
+# Estimated_plgg1$flexobj[[5]][[1]] -> prog1to2
+# prog1to2$res[,1] -> res2
+# plot(0:10,plnorm(0:10, meanlog=res2[1], sdlog=res2[2], lower.tail = F), ylim=c(0,1), type="l")
 
 # This is exact same structure as above only differencce is indexing in FlexSurvRes
 # Probs.plggFused <- function(t_instate,StateIndx, Cycle1,FlexSurvRes ){
