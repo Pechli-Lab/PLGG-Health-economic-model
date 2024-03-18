@@ -36,8 +36,8 @@ discounting scenarios and 2nd-best distribution
 ## Data location
 
 ```{r}
-fileloc <- here::here("04_analysis","output","scenarios","basecase exp lifetime combo")
-nn <- 50
+fileloc <- here::here("04_analysis","output","scenarios","sickkids control lnorm lifetime combo")
+index <- c(1:50)
 ```
 
 The files are spread out over 5 folders. 
@@ -54,7 +54,7 @@ Abstract results
 # model results 
 #res_model <- list.files(paste0(fileloc, "/Scenario 1 life-time treatment", "/res_model"),full.names = TRUE)
 #res_model <- list.files(paste0(here::here("04_analysis","output"), "/res_model"),full.names = TRUE)[1:5]
-res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[1:nn]
+res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 #res_model <- list.files(paste0(fileloc, "output/rad_after_prog2_lifetime_discount20", "/res_model"),full.names = TRUE)
 #res_model <- list.files(paste0(fileloc, "output/rad_after_prog2_lifetime_discount30", "/res_model"),full.names = TRUE)
 
@@ -135,7 +135,7 @@ df_deltacea <- df_delta %>%
 df_model2 <- df_model1 %>% 
   bind_rows(mutate( df_delta1, intervention = "delta")) %>% 
     mutate(Variable = factor(Variable, levels = c("LY","QALY","Cost")),
-         Type = factor(Type, levels = c("LY","QALY","Total","PLGG","AE","Treatment","Radiation"))
+         Type = factor(Type, levels = c("LY","QALY","Total","PLGG","AE","gen","Treatment","Radiation"))
          ) %>% 
   arrange(Variable, Type, discount, rr) %>% 
   spread(intervention, stat)
@@ -173,15 +173,17 @@ tb2a$Variable <- as.character(tb2a$Variable)
 tb2a$Variable[tb2a$Variable=="Treatment"] <- "Targeted costs"
 tb2a$Variable[tb2a$Variable=="PLGG"] <- "Non-Targeted PLGG related costs"
 tb2a$Variable[tb2a$Variable=="AE"] <- "AE related costs"
+tb2a$Variable[tb2a$Variable=="gen"] <- "General population costs"
 tb2a$Variable[tb2a$Variable=="Radiation"] <- "Radiation costs"
 tb2a$Variable <- factor(tb2a$Variable, levels = c("Life-years","QALY","Total Cost","Non-Targeted PLGG related costs",
-                                                  "AE related costs","Targeted costs","Radiation costs"))
+                                                  "AE related costs" ,"General population costs", 
+                                                  "Targeted costs","Radiation costs"))
 pander(tb2a)
 ``` 
 
 ```{r}
 # Averaging cohort traces across simulation run
-l_prop_df <- list.files(paste0(fileloc, "/trace"),full.names = TRUE)[1:nn]
+l_prop_df <- list.files(paste0(fileloc, "/trace"),full.names = TRUE)[index]
 prop_df  <- map_df(l_prop_df[1], readRDS) 
 prop_df$cycle <- as.numeric(prop_df$cycle)
 prop_df$intervention <- ifelse(prop_df$intervention == "Targeted", 1, 0)
@@ -235,7 +237,7 @@ ggplot(data = prop_long, aes(x = cycle, y = proportion, color = state, group = s
 ```{r}
 # AEs
 l_AE_df <- list.files(paste0(fileloc, "/AE_track"),
-                      full.names = TRUE)[1:nn]
+                      full.names = TRUE)[index]
 AE_df <- map_df(l_AE_df[1], readRDS) 
 ## Targeted
 AE_df_Targeted <- AE_df %>% filter(intervention == "Targeted")
@@ -312,14 +314,17 @@ if (nn > 1) {
   df_AE_SoC$intervention <- "SoC"
 }
 
-df_AE <- rbind(df_AE_Targeted, df_AE_SoC)
+df_AE0 <- rbind(df_AE_Targeted, df_AE_SoC)
+df_AE <- as.data.frame(apply(df_AE0, 2, cumsum))
+df_AE$cycle <- df_AE0$cycle
+df_AE$intervention <- df_AE0$intervention
 
 prop_long <- df_AE %>% select(cycle,auditory,cardiovascular,neurologic,SN,stroke,visual,intervention) %>%
   tidyr::pivot_longer(-c(cycle,intervention), names_to = "state", values_to = "proportion") %>%
   mutate(cycle=cycle/12)
 ggplot(data = prop_long, aes(x = cycle, y = proportion, color = state, group = state)) +
   geom_line() +
-  labs(title = "Trace Plot of PLGG-related AE States Across Cycles",
+  labs(title = "Cumulative Incidence of PLGG-related AE States Across Cycles",
        x = "Year",
        y = "Proportion",
        color = "PLGG-related AE states") +
@@ -333,7 +338,7 @@ prop_long <- df_AE %>% select(cycle,SN_gen,cardiovascular_gen,death_outside,deat
   mutate(cycle=cycle/12)
 ggplot(data = prop_long, aes(x = cycle, y = proportion, color = state, group = state)) +
   geom_line() +
-  labs(title = "Trace Plot of Other AE States Across Cycles",
+  labs(title = "Cumulative Incidence of Other AE States Across Cycles",
        x = "Year",
        y = "Proportion",
        color = "Other AE states") +
@@ -347,7 +352,7 @@ grid.arrange(a,b, nrow=2, ncol=1)
 
 ```
 
-## Supplementary Table 1 
+i## Supplementary Table 1 
 
 Supplementary Table 1: Estimates of life-years after diagnosis, QALYs (Discounted) and Costs (Discounted), for fused patients, and fused patients who progressed.
 

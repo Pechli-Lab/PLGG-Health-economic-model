@@ -109,19 +109,23 @@ k1 <- fun_genRadBenefit(dig_radbenefit =dig_radbenefit1, deter =T)
 ### Survival curves
 ## Targeted
 # Investigator assessment
-#load(paste0(here::here("04_analysis","control scenarios","Erics firstline RCT"),"/fitted_PFS_targeted_firstline_investigator_exp_100.RData")) # pre-prog to prog1
+load(paste0(here::here("04_analysis","control scenarios","Erics firstline RCT"),"/fitted_PFS_targeted_firstline_investigator_exp_100.RData")) # pre-prog to prog1
 #load(paste0(here::here("04_analysis","control scenarios","Erics firstline RCT"),"/fitted_PFS_targeted_firstline_investigator_lnorm_100.RData")) 
 
 # Independent reviewer
 #load(paste0(here::here("04_analysis","control scenarios","Erics firstline RCT"),"/fitted_PFS_targeted_firstline_exp_100.RData")) # pre-prog to prog1
-load(paste0(here::here("04_analysis","control scenarios","Erics firstline RCT"),"/fitted_PFS_targeted_firstline_lnorm_100.RData")) 
+#load(paste0(here::here("04_analysis","control scenarios","Erics firstline RCT"),"/fitted_PFS_targeted_firstline_lnorm_100.RData")) 
 
 ## Control 
 # Investigator assessment
+load(paste0(here::here("04_analysis","control scenarios","Erics firstline RCT"),"/fitted_PFS_control_firstline_investigator_exp_100.RData")) # pre-prog to prog1
 #load(paste0(here::here("04_analysis","control scenarios","Erics firstline RCT"),"/fitted_PFS_control_firstline_investigator_lnorm_100.RData")) # pre-prog to prog1
 
+# Independent reviewer
+#load(paste0(here::here("04_analysis","control scenarios","Erics firstline RCT"),"/fitted_PFS_control_firstline_lnorm_100.RData")) # pre-prog to prog1
+
 # SickKids (control arm, match with only independent reviewer targeted)
-load(paste0(here::here("04_analysis","control scenarios","Bryans SickKids data firstline"),"/fitted_PFS_control_sk_firstline_exp_100.RData")) # pre-prog to prog 1     
+#load(paste0(here::here("04_analysis","control scenarios","Bryans SickKids data firstline"),"/fitted_PFS_control_sk_firstline_exp_100.RData")) # pre-prog to prog 1     
 
 # Prog 1 to prog 2
 load(paste0(here::here("04_analysis","control scenarios","Bryans SickKids data"),"/fitted_PFS_control_sk_exp_100.RData")) # prog1 to prog2
@@ -200,7 +204,7 @@ for(sim_num1 in torun1){
                          trt_duration     = 1,
                          combo            = TRUE)
   
-  # # Testing
+  # # # Testing
   # n.i              = n.i_g;
   # n.y              = n.y_g;
   # cyc.t            = 1/12;
@@ -221,13 +225,14 @@ for(sim_num1 in torun1){
   # sim_numi         = sim_num;
   # rri              = 0;
   # loc_out1         = loc_here_out;
-  # trt_duration     = 1
+  # trt_duration     = 1;
+  # combo            = T;
   
   message("finished assuming no radiation benefit")
   
   for( i in seq_along(qr1)){
     #saveRDS(qr1[[i]], paste0(loc_here_out, names(qr1)[i], "/", "model_", sim_num, "_RR_0.RDS" ))
-    saveRDS(qr1[[i]], paste0(loc_here_out, "/scenarios/sickkids control lnorm lifetime combo/", names(qr1)[i], "/", "model_", sim_num, "_RR_0.RDS" ))
+    saveRDS(qr1[[i]], paste0(loc_here_out, "/scenarios/basecase exp lifetime investigator combo/", names(qr1)[i], "/", "model_", sim_num, "_RR_0.RDS" ))
   }
 
   rm(qr1)

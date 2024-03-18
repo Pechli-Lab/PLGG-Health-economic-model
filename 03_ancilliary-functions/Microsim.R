@@ -76,6 +76,7 @@ Microsimulation <- function(n.i, n.y, cyc.t, monitor,seed_n, df_char,Estimated_p
                                                                         dimnames = list(paste("ind", 1:n.i, sep = " "), 
                                                                         paste( 0:n.t)),data = 0)
     m.Costs.rad <- m.Costs.trt
+    m.Costs.ae.gen  <- m.Costs.ae
     
     # m.M (state tracking)
     m.M <- matrix(nrow = n.i, 
@@ -155,8 +156,6 @@ Microsimulation <- function(n.i, n.y, cyc.t, monitor,seed_n, df_char,Estimated_p
       # m.Costs.rad[RadIndc, t + 1] <- 7199.34 # value given by Petros on Teams
       # df_char$Radiation[rad_switch] <- 1
       
-      # Check if patients have progressed and went to chemo
-      reduced_AErisk <- m.M[,t] == "pre_prog"
       
       # Create m.p: transition matrices for next period  
       m.p <- Probs(M_it              = m.M[,t], 
@@ -175,6 +174,7 @@ Microsimulation <- function(n.i, n.y, cyc.t, monitor,seed_n, df_char,Estimated_p
                    inter             = intervention,
                    tt                = t,
                    trt_dur           = trt_duration)
+      
       #test
       # M_it              = m.M[,t];
       # D_m               = m.Dur;
@@ -215,9 +215,16 @@ Microsimulation <- function(n.i, n.y, cyc.t, monitor,seed_n, df_char,Estimated_p
       # Capture first time patient enters an AE state
       m.Vis.AE <- m.Vis[,-c(1:4)]
       m.Vis.AE[m.Vis.AE==T] <- t # actual cycle, starts at cycle 1 not 0 for this thing only
+      
       for (j in 1:ncol(m.AE)){
         m.AE[m.AE[,j]==0,j] <- m.Vis.AE[m.AE[,j]==0,j]
       }
+
+      # Capture which state patient coming from when they first get into AE
+      # m.AE1 <- m.AE
+      # for (i in 1:nrow(m.M)) {
+      #   m.AE1[i,m.AE1[i,] > 0] <- m.M[i, m.AE[i,m.AE[i,] > 0]]
+      # }
       
       # Creating radiation decision for those that progress
       # RadDec.patients <-m.M[, t + 1] == "prog1" & m.M[, t] != "prog1"
@@ -275,29 +282,29 @@ Microsimulation <- function(n.i, n.y, cyc.t, monitor,seed_n, df_char,Estimated_p
       #}
       
       # General population costs
-      # Assinged when alive and no costs
+      # Assigned when alive and no costs
       alive_indc <-!(m.M[, t+ 1] %in% c("death_plgg","death_SN","death_outside","death_stroke","death_SN","death_cardio"))   
       nocost <-(m.Costs.ae[,t +1 ]  + m.Costs.plgg[,t +1 ]) == 0
       
-      m.Costs.ae[alive_indc & nocost & curent_age < 5,t+1] <- General_pop_costs.l$five
-      m.Costs.ae[alive_indc & nocost & (curent_age >= 5 & curent_age < 10),t+1] <- General_pop_costs.l$ten
-      m.Costs.ae[alive_indc & nocost & (curent_age >= 10 & curent_age < 15),t+1] <- General_pop_costs.l$fifteen
-      m.Costs.ae[alive_indc & nocost & (curent_age >= 15 & curent_age < 20),t+1] <- General_pop_costs.l$twenty
-      m.Costs.ae[alive_indc & nocost & (curent_age >= 20 & curent_age < 25),t+1] <- General_pop_costs.l$twentyfive
-      m.Costs.ae[alive_indc & nocost & (curent_age >= 25 & curent_age < 30),t+1] <- General_pop_costs.l$thirty
-      m.Costs.ae[alive_indc & nocost & (curent_age >= 30 & curent_age < 35),t+1] <- General_pop_costs.l$thirtyfive
-      m.Costs.ae[alive_indc & nocost & (curent_age >= 35 & curent_age < 40),t+1] <- General_pop_costs.l$fourty
-      m.Costs.ae[alive_indc & nocost & (curent_age >= 40 & curent_age < 45),t+1] <- General_pop_costs.l$fourtyfive
-      m.Costs.ae[alive_indc & nocost & (curent_age >= 45 & curent_age < 50),t+1] <- General_pop_costs.l$fifty
-      m.Costs.ae[alive_indc & nocost & (curent_age >= 50 & curent_age < 55),t+1] <- General_pop_costs.l$fiftyfive
-      m.Costs.ae[alive_indc & nocost & (curent_age >= 55 & curent_age < 60),t+1] <- General_pop_costs.l$sixty
-      m.Costs.ae[alive_indc & nocost & (curent_age >= 60 & curent_age < 65),t+1] <- General_pop_costs.l$sixtyfive
-      m.Costs.ae[alive_indc & nocost & (curent_age >= 65 & curent_age < 70),t+1] <- General_pop_costs.l$seventy
-      m.Costs.ae[alive_indc & nocost & (curent_age >= 70 & curent_age < 75),t+1] <- General_pop_costs.l$seventyfive
-      m.Costs.ae[alive_indc & nocost & (curent_age >= 75 & curent_age < 80),t+1] <- General_pop_costs.l$eighty
-      m.Costs.ae[alive_indc & nocost & (curent_age >= 80 & curent_age < 85),t+1] <- General_pop_costs.l$eightyfive
-      m.Costs.ae[alive_indc & nocost & (curent_age >= 85 & curent_age < 90),t+1] <- General_pop_costs.l$ninty
-      m.Costs.ae[alive_indc & nocost & (curent_age >= 90 ),t+1] <- General_pop_costs.l$death
+      m.Costs.ae.gen[alive_indc & nocost & curent_age < 5,t+1] <- General_pop_costs.l$five
+      m.Costs.ae.gen[alive_indc & nocost & (curent_age >= 5 & curent_age < 10),t+1] <- General_pop_costs.l$ten
+      m.Costs.ae.gen[alive_indc & nocost & (curent_age >= 10 & curent_age < 15),t+1] <- General_pop_costs.l$fifteen
+      m.Costs.ae.gen[alive_indc & nocost & (curent_age >= 15 & curent_age < 20),t+1] <- General_pop_costs.l$twenty
+      m.Costs.ae.gen[alive_indc & nocost & (curent_age >= 20 & curent_age < 25),t+1] <- General_pop_costs.l$twentyfive
+      m.Costs.ae.gen[alive_indc & nocost & (curent_age >= 25 & curent_age < 30),t+1] <- General_pop_costs.l$thirty
+      m.Costs.ae.gen[alive_indc & nocost & (curent_age >= 30 & curent_age < 35),t+1] <- General_pop_costs.l$thirtyfive
+      m.Costs.ae.gen[alive_indc & nocost & (curent_age >= 35 & curent_age < 40),t+1] <- General_pop_costs.l$fourty
+      m.Costs.ae.gen[alive_indc & nocost & (curent_age >= 40 & curent_age < 45),t+1] <- General_pop_costs.l$fourtyfive
+      m.Costs.ae.gen[alive_indc & nocost & (curent_age >= 45 & curent_age < 50),t+1] <- General_pop_costs.l$fifty
+      m.Costs.ae.gen[alive_indc & nocost & (curent_age >= 50 & curent_age < 55),t+1] <- General_pop_costs.l$fiftyfive
+      m.Costs.ae.gen[alive_indc & nocost & (curent_age >= 55 & curent_age < 60),t+1] <- General_pop_costs.l$sixty
+      m.Costs.ae.gen[alive_indc & nocost & (curent_age >= 60 & curent_age < 65),t+1] <- General_pop_costs.l$sixtyfive
+      m.Costs.ae.gen[alive_indc & nocost & (curent_age >= 65 & curent_age < 70),t+1] <- General_pop_costs.l$seventy
+      m.Costs.ae.gen[alive_indc & nocost & (curent_age >= 70 & curent_age < 75),t+1] <- General_pop_costs.l$seventyfive
+      m.Costs.ae.gen[alive_indc & nocost & (curent_age >= 75 & curent_age < 80),t+1] <- General_pop_costs.l$eighty
+      m.Costs.ae.gen[alive_indc & nocost & (curent_age >= 80 & curent_age < 85),t+1] <- General_pop_costs.l$eightyfive
+      m.Costs.ae.gen[alive_indc & nocost & (curent_age >= 85 & curent_age < 90),t+1] <- General_pop_costs.l$ninty
+      m.Costs.ae.gen[alive_indc & nocost & (curent_age >= 90 ),t+1] <- General_pop_costs.l$death
       
       # Cost of treatment
       if (intervention == "Targeted" & t <= 24 & trt_duration == 2) { # only stays on treatment for 2 years
@@ -357,7 +364,7 @@ Microsimulation <- function(n.i, n.y, cyc.t, monitor,seed_n, df_char,Estimated_p
     df.AE <- as.data.frame(m.AE)
     df.AE$intervention <- intervention
     assign(paste0(intervention, "_AE"), df.AE)
-    
+
     t1 <- sum_function(sim_num       = sim_numi,
                        intervention1 = intervention,
                        rr1           = rri,
@@ -367,6 +374,7 @@ Microsimulation <- function(n.i, n.y, cyc.t, monitor,seed_n, df_char,Estimated_p
                        mVis          = m.Vis,
                        costsplgg     = m.Costs.plgg,
                        costsAE       = m.Costs.ae,
+                       costsgen      = m.Costs.ae.gen,
                        coststrt      = m.Costs.trt,
                        costsrad      = m.Costs.rad,
                        util          = m.Utilities,
@@ -397,5 +405,6 @@ Microsimulation <- function(n.i, n.y, cyc.t, monitor,seed_n, df_char,Estimated_p
   # return(paste0("completed",sim_numi))
   
 } # Function end
+
 
 

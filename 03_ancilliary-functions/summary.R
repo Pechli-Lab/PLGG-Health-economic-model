@@ -2,7 +2,7 @@
 
 # function of the following inputs
 sum_function <- function(sim_num, intervention1, rr1, d_rate,mM, mDur, mVis,
-                         costsplgg, costsAE, coststrt, costsrad, util, vRAD, vFusion  ){
+                         costsplgg, costsAE, costsgen, coststrt, costsrad, util, vRAD, vFusion  ){
   # What simulation number,
   # Parameter on radiation benefit
   # Intervention
@@ -73,9 +73,8 @@ sum_function <- function(sim_num, intervention1, rr1, d_rate,mM, mDur, mVis,
                           subset   = unlist(type), 
                           discount = 1)
   
-  costs_ae <- vector(mode = "numeric", length = 3)
-  
   # Costs AE 
+  costs_ae <- vector(mode = "numeric", length = 3)
   #   All 
   costs_ae[[1]] <-mean(rowSums(costsAE*v_dwc))
   #   Fused
@@ -86,6 +85,21 @@ sum_function <- function(sim_num, intervention1, rr1, d_rate,mM, mDur, mVis,
   df_costs_ae   <- tibble(Value    = costs_ae, 
                           Variable = "Cost", 
                           Type     = "AE",  
+                          subset   = unlist(type), 
+                          discount = 1)
+  
+  # Costs General
+  costs_gen <- vector(mode = "numeric", length = 3)
+  #   All 
+  costs_gen[[1]] <-mean(rowSums(costsgen*v_dwc))
+  #   Fused
+  costs_gen[[2]] <- mean(rowSums(costsgen[vFusion == 1,]*v_dwc))
+  #   Fused and Prog 1 
+  costs_gen[[3]] <- mean(rowSums(costsgen[vFusion == 1 & mVis[,2],]*v_dwc))
+  
+  df_costs_gen   <- tibble(Value    = costs_gen, 
+                          Variable = "Cost", 
+                          Type     = "gen",  
                           subset   = unlist(type), 
                           discount = 1)
   
@@ -121,7 +135,7 @@ sum_function <- function(sim_num, intervention1, rr1, d_rate,mM, mDur, mVis,
   
   # Costs Total
   #   All 
-  costs_total <- costs_ae + costs_plgg + costs_trt + costs_rad
+  costs_total <- costs_ae + costs_gen + costs_plgg + costs_trt + costs_rad
   
   df_costs_total <- tibble(Value    = costs_total, 
                            Variable = "Cost", 
@@ -163,6 +177,22 @@ sum_function <- function(sim_num, intervention1, rr1, d_rate,mM, mDur, mVis,
                               subset   = unlist(type), 
                               discount = 0)
   
+  costs_gen_undis<- vector(mode = "numeric", length = 3)
+  
+  # Costs general 
+  #   All 
+  costs_gen_undis[[1]] <-mean(rowSums(costsgen))
+  #   Fused
+  costs_gen_undis[[2]] <- mean(rowSums(costsgen[vFusion == 1,]))
+  #   Fused and Prog 1 
+  costs_gen_undis[[3]] <- mean(rowSums(costsgen[vFusion == 1 & mVis[,2],]))
+  
+  df_costs_gen_undis <- tibble(Value    = costs_gen_undis, 
+                              Variable = "Cost", 
+                              Type     = "gen",  
+                              subset   = unlist(type), 
+                              discount = 0)
+  
   costs_trt_undis<- vector(mode = "numeric", length = 3)
   
   # Costs trt 
@@ -195,7 +225,7 @@ sum_function <- function(sim_num, intervention1, rr1, d_rate,mM, mDur, mVis,
                                subset   = unlist(type), 
                                discount = 0)
   
-  costs_total_undis <- costs_ae_undis + costs_plgg_undis + costs_trt_undis + costs_rad_undis
+  costs_total_undis <- costs_ae_undis + costs_gen_undis + costs_plgg_undis + costs_trt_undis + costs_rad_undis
   # Costs Total
   #   All 
   df_costs_total_undis <- tibble(Value    = costs_total_undis, 
@@ -205,11 +235,13 @@ sum_function <- function(sim_num, intervention1, rr1, d_rate,mM, mDur, mVis,
                                  discount = 0)
   
   df_Costs <- rbind(df_costs_ae,
+                    df_costs_gen,
                     df_costs_plgg,
                     df_costs_trt, 
                     df_costs_rad,
                     df_costs_total,
                     df_costs_ae_undis, 
+                    df_costs_gen_undis,
                     df_costs_plgg_undis,
                     df_costs_trt_undis,
                     df_costs_rad_undis,

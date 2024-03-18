@@ -173,16 +173,26 @@ m.p.it[!RadIndc,c("neurologic","auditory","visual","stroke","cardiovascular","SN
     }
   }
   
-  # Apply hazard ratio of AE for targeted (for those who had never experienced chemo/only targeted)
-  if (inter == "Targeted" & any(M_it=="pre_prog")) {
-    reduced_AErisk <- M_it == "pre_prog"
-    m.p.it[reduced_AErisk, "neurologic"]     <- 1-exp(-prob_to_rate(m.p.it[reduced_AErisk, "neurologic"])     * (1/2.5)) 
-    m.p.it[reduced_AErisk, "auditory"]       <- 1-exp(-prob_to_rate(m.p.it[reduced_AErisk, "auditory"])       * (1/1.6))
-    m.p.it[reduced_AErisk, "visual"]         <- 1-exp(-prob_to_rate(m.p.it[reduced_AErisk, "visual"])         * (1/3.7))
-    m.p.it[reduced_AErisk, "stroke"]         <- 1-exp(-prob_to_rate(m.p.it[reduced_AErisk, "stroke"])         * (1/2.4))
-    m.p.it[reduced_AErisk, "cardiovascular"] <- 1-exp(-prob_to_rate(m.p.it[reduced_AErisk, "cardiovascular"]) * (1/5.3))
+  # Apply hazard ratio of AE for targeted (for those who had never experienced chemo/only ever on targeted)
+  #if (inter == "Targeted" & any(M_it=="pre_prog")) {
+
+   if (inter == "Targeted"){
+     reduced_AErisk <- M_it == "pre_prog"
+   
+    # m.p.it[reduced_AErisk, "neurologic"]     <- 1-exp(-prob_to_rate(m.p.it[reduced_AErisk, "neurologic"])     * (1/2.5)) 
+    # m.p.it[reduced_AErisk, "auditory"]       <- 1-exp(-prob_to_rate(m.p.it[reduced_AErisk, "auditory"])       * (1/1.6))
+    # m.p.it[reduced_AErisk, "visual"]         <- 1-exp(-prob_to_rate(m.p.it[reduced_AErisk, "visual"])         * (1/3.7))
+    # m.p.it[reduced_AErisk, "stroke"]         <- 1-exp(-prob_to_rate(m.p.it[reduced_AErisk, "stroke"])         * (1/2.4))
+    # m.p.it[reduced_AErisk, "cardiovascular"] <- 1-exp(-prob_to_rate(m.p.it[reduced_AErisk, "cardiovascular"]) * (1/5.3))
+    # turn AE completely off for those who had never experienced chemo/ only ever on targeted
+    m.p.it[reduced_AErisk, "neurologic"]     <- 0
+    m.p.it[reduced_AErisk, "auditory"]       <- 0
+    m.p.it[reduced_AErisk, "visual"]         <- 0
+    m.p.it[reduced_AErisk, "stroke"]         <- 0
+    m.p.it[reduced_AErisk, "cardiovascular"] <- 0
+    m.p.it[reduced_AErisk, "SN"]             <- 0
   }
-  
+   
   # Calculate the probability of remaining in current state
   # Calculating the probability of remaining in state as 
   # 1 - sum(probability i leave to another state) 

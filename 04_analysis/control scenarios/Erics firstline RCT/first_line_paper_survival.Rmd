@@ -331,6 +331,21 @@ for (i in 1:N_sim) {
 save(fitted_PFS_chemo, file="fitted_PFS_control_firstline_investigator_lnorm_100.RData")
 ```
 
+```{r}
+N_sim <- 100
+fitted_PFS_chemo <- list()
+set.seed(1)
+for (i in 1:N_sim) {
+  ids <- sample(1:nrow(IPD_PFS), replace=T)
+  PFS_data_boot <- IPD_PFS[ids,]
+  fit_PFS <- fit.fun(time  = "time", status = "event", data = PFS_data_boot,
+                     times = times, extrapolate = T, mods=c("exp"))
+  fitted_PFS_chemo[[i]] <- fit_PFS$model.objects$models$Exponential
+  print(i)
+}
+save(fitted_PFS_chemo, file="fitted_PFS_control_firstline_investigator_exp_100.RData")
+```
+
 ## Targeted arm
 
 ```{r}
