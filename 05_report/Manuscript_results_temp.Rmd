@@ -36,8 +36,9 @@ discounting scenarios and 2nd-best distribution
 ## Data location
 
 ```{r}
-fileloc <- here::here("04_analysis","output","scenarios","sickkids control lnorm lifetime combo")
-index <- c(1:50)
+fileloc <- here::here("04_analysis","output","scenarios","basecase exp lifetime investigator combo")
+index <- c(1:30)
+nn <- length(index)
 ```
 
 The files are spread out over 5 folders. 
@@ -314,10 +315,13 @@ if (nn > 1) {
   df_AE_SoC$intervention <- "SoC"
 }
 
-df_AE0 <- rbind(df_AE_Targeted, df_AE_SoC)
-df_AE <- as.data.frame(apply(df_AE0, 2, cumsum))
-df_AE$cycle <- df_AE0$cycle
-df_AE$intervention <- df_AE0$intervention
+df_AE_Targeted0 <- as.data.frame(apply(df_AE_Targeted, 2, cumsum))
+df_AE_Targeted0$cycle <- df_AE_Targeted$cycle
+df_AE_Targeted0$intervention <- df_AE_Targeted$intervention
+df_AE_SoC0 <- as.data.frame(apply(df_AE_SoC, 2, cumsum))
+df_AE_SoC0$cycle <- df_AE_SoC$cycle
+df_AE_SoC0$intervention <- df_AE_SoC$intervention
+df_AE <- rbind(df_AE_Targeted0, df_AE_SoC0)
 
 prop_long <- df_AE %>% select(cycle,auditory,cardiovascular,neurologic,SN,stroke,visual,intervention) %>%
   tidyr::pivot_longer(-c(cycle,intervention), names_to = "state", values_to = "proportion") %>%
@@ -329,6 +333,7 @@ ggplot(data = prop_long, aes(x = cycle, y = proportion, color = state, group = s
        y = "Proportion",
        color = "PLGG-related AE states") +
   theme_bw() +
+  scale_y_continuous(limits=c(0,0.5)) + 
   theme(legend.position = "right") +
   facet_wrap(~intervention) -> a
 
@@ -343,6 +348,7 @@ ggplot(data = prop_long, aes(x = cycle, y = proportion, color = state, group = s
        y = "Proportion",
        color = "Other AE states") +
   theme_bw() +
+  scale_y_continuous(limits=c(0,0.5)) + 
   theme(legend.position = "right") +
   facet_wrap(~intervention) -> b
 grid.arrange(a,b, nrow=2, ncol=1)
