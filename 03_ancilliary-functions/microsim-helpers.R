@@ -130,6 +130,9 @@ Probs.plggWT <- function(t_instate,StateIndx, Cycle1, FlexSurvRes, inter, tt, tr
   if(any(StateIndx ==   "prog1")){
     state2.log <- StateIndx ==   "prog1"
     Prob.mat[state2.log,3] <- SurvProbFun(object = FlexSurvRes$flexobj[[10]][[1]], t = t_instate[state2.log], cycle1 = Cycle1) # prog1 to prog2
+    if (inter == "Targeted") { # prog1 to prog2 (favourable for targeted as risk of progression same as first line)
+      Prob.mat[state2.log,3] <- SurvProbFun(object = FlexSurvRes$flexobj[[arm]][[1]], t = t_instate[state2.log], cycle1 = Cycle1)
+    }
     Prob.mat[state2.log,4] <- SurvProbFun(object = FlexSurvRes$flexobj[[4]][[1]], t = t_instate[state2.log], cycle1 = Cycle1, calib = F)  # prog 1 to death
     #Prob.mat[state2.log,4] <- SurvProbFun(object = FlexSurvRes$flexobj[[7]][[1]], t = t_instate[state2.log], cycle1 = Cycle1, calib = F)  # prog 1 to death
   }

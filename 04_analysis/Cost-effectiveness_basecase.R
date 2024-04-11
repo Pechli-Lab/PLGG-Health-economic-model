@@ -127,6 +127,7 @@ load(paste0(here::here("04_analysis","control scenarios","Erics firstline RCT"),
 # SickKids (control arm, match with only independent reviewer targeted)
 load(paste0(here::here("04_analysis","control scenarios","Bryans SickKids data firstline"),"/fitted_PFS_control_sk_firstline_exp_100.RData")) # pre-prog to prog 1     
 
+
 # Prog 1 to prog 2
 load(paste0(here::here("04_analysis","control scenarios","Bryans SickKids data"),"/fitted_PFS_control_sk_exp_100.RData")) # prog1 to prog2
 
@@ -135,7 +136,7 @@ load(paste0(here::here("literature"),"/fitted_plgg_os_adjust_exp_100.RData")) # 
 
 
 ## Global Parameters
-N_sim <- 30
+N_sim <- 50
 torun1 <- 1:N_sim
 
 start.time <- Sys.time()
