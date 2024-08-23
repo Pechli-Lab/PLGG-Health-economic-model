@@ -37,7 +37,7 @@ discounting scenarios and 2nd-best distribution
 
 ```{r}
 fileloc <- here::here("04_analysis","output","scenarios","basecase exp lifetime investigator combo")
-index <- c(1:30)
+index <- c(1:50)
 nn <- length(index)
 ```
 
@@ -191,9 +191,19 @@ prop_df$intervention <- ifelse(prop_df$intervention == "Targeted", 1, 0)
 prop_df <- apply(prop_df,2,as.numeric)
 prop_df <- as.data.frame(prop_df)
 prop_df <- prop_df %>% dplyr::select("cycle", "pre_prog", "auditory", "cardiovascular", "death_outside", 
-                                             "death_plgg", "neurologic", "prog1", "SN", "stroke", "visual", "death_cardio",
+                                             "death_plgg", "neurologic", "prog1", "SN", "stroke", "visual",      
+                                             "death_cardio",
                                              "prog2", "SN_gen", "death_SN", "death_stroke", "cardiovascular_gen",
                                              "stroke_gen", "intervention")
+p_surv <- p_surv_plgg <- as.data.frame(matrix(NA,nrow=nrow(prop_df), ncol=nn))
+p_surv$intervention  <- prop_df$intervention
+p_surv_plgg$intervention <- prop_df$intervention
+p_surv$cycle  <- prop_df$cycle
+p_surv_plgg$cycle <- prop_df$cycle
+p_surv[,1] <- 1 - (prop_df$death_outside + prop_df$death_cardio + prop_df$death_SN + prop_df$death_stroke +
+                  prop_df$death_plgg)
+p_surv_plgg[,1] <- 1 - prop_df$death_plgg
+
 if (nn > 1) {
   for (i in 2:nn) {
     prop_df_i  <- map_df(l_prop_df[i], readRDS) 
@@ -206,6 +216,13 @@ if (nn > 1) {
     prop_df_i <- apply(prop_df_i,2,as.numeric)
     prop_df_i <- as.data.frame(prop_df_i)
     prop_df <- prop_df + prop_df_i
+    # calculate overall survival
+    p_death_i <- prop_df_i$death_outside + prop_df_i$death_cardio + prop_df_i$death_SN + prop_df_i$death_stroke +
+                  prop_df_i$death_plgg
+    p_surv[,i] <- 1 - p_death_i
+    # calculate plgg-related survival
+    p_death_plgg_i <- prop_df_i$death_plgg
+    p_surv_plgg[,i] <- 1 - p_death_plgg_i
   }
   prop_df <- prop_df/nn
 }
@@ -352,6 +369,40 @@ ggplot(data = prop_long, aes(x = cycle, y = proportion, color = state, group = s
   theme(legend.position = "right") +
   facet_wrap(~intervention) -> b
 grid.arrange(a,b, nrow=2, ncol=1)
+```
+
+```{r}
+# Survival
+## Overall
+p_surv$intervention <- ifelse(p_surv$intervention == 1, "Targeted", "SoC")
+p_surv1 <- data.frame(avg = apply(p_surv %>% select(-cycle, -intervention), 1, mean),
+                      lb = apply(p_surv %>% select(-cycle, -intervention), 1, function(x){quantile(x, 0.025)}),
+                      ub = apply(p_surv %>% select(-cycle, -intervention), 1, function(x){quantile(x, 0.975)}))
+p_surv1$intervention <- p_surv$intervention
+p_surv1$cycle <- p_surv$cycle/12
+ggplot(p_surv1, aes(x = cycle)) +
+  geom_ribbon(aes(ymin = lb, ymax = ub), fill = "blue", alpha = 0.2) +  
+  geom_line(aes(y = avg), color = "blue") +  
+  labs(x = "Time", y = "Survival Probability", 
+       title = "Overall Survival Over Time with 95% Confidence Interval") +
+  theme_bw() + facet_wrap(~intervention)
+
+
+## PLGG
+p_surv_plgg$intervention <- ifelse(p_surv_plgg$intervention == 1, "Targeted", "SoC")
+p_surv_plgg1 <- data.frame(avg = apply(p_surv_plgg %>% select(-cycle, -intervention), 1, mean),
+                      lb = apply(p_surv_plgg %>% 
+                                   select(-cycle, -intervention), 1, function(x){quantile(x, 0.025)}),
+                      ub = apply(p_surv_plgg %>% 
+                                   select(-cycle, -intervention), 1, function(x){quantile(x, 0.975)}))
+p_surv_plgg1$intervention <- p_surv_plgg$intervention
+p_surv_plgg1$cycle <- p_surv_plgg$cycle/12
+ggplot(p_surv_plgg1, aes(x = cycle)) +
+  geom_ribbon(aes(ymin = lb, ymax = ub), fill = "blue", alpha = 0.2) +  
+  geom_line(aes(y = avg), color = "blue") +  
+  labs(x = "Time", y = "surv_plggival Probability", 
+       title = "PLGG-related survival Over Time with 95% Confidence Interval") +
+  theme_bw() + facet_wrap(~intervention)
 ```
 
 ```{r}

@@ -6,7 +6,7 @@ gen_costs <- function(){
   # output: a list with Inpatient_Costs.l , Outpatient_costs.l, AE_costs.l, Lookback_costs.l
   # see 06_report, Tables_out for source of values
   inflat <- 151.2/133.4 # StatsCan CPI 2022 vs. 2018
-  discount <- 0 # x% discount, e.g. 20% discount = 0.2
+  discount <- 0.75 # x% discount, e.g. 20% discount = 0.2
   
   Inpatient_Costs.l  <- list(
     pre_prog = c(14955.52, 357.26)*inflat, # Cycle 1; cycle 2 until patient is 18 years old (Supp table 1)
@@ -53,7 +53,7 @@ gen_costs <- function(){
                          Nanostring = 0) # One-time cost (Supp table 1)
   
   Costs_trt.l = list(Targeted = 3958.42*inflat * (1-discount), # debraf
-                     tram = 76.96 * 30.44 * 1.3269 * (151.2/136.0)) # monthly
+                     tram = 76.96 * 30.44 * 1.3269 * (151.2/136.0) * (1-discount)) # monthly
   
   # 76.96/day from Petros on teams, 1.3269 is average USD to CAD exchange rate in 2019 (Bank of Canada)
   # 30.44 days a month

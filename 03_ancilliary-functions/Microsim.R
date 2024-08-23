@@ -149,14 +149,6 @@ Microsimulation <- function(n.i, n.y, cyc.t, monitor,seed_n, df_char,Estimated_p
       #if(t == 100){debug(Probs)}
       # if(any(m.Vis[,2] & df_char$Radiation == 1)){debug(Probs)}
       
-      ### Move those after 2nd prog to rad and stop chemo/targeted
-      # rad_switch <- m.M[,t] == "prog2"
-      # RadIndc <- rad_switch & df_char$Radiation == 0 # indicated for Rad switch and never incurred Rad cost
-      # #Cost of radiation incurred at the switch to rad
-      # m.Costs.rad[RadIndc, t + 1] <- 7199.34 # value given by Petros on Teams
-      # df_char$Radiation[rad_switch] <- 1
-      
-      
       # Create m.p: transition matrices for next period  
       m.p <- Probs(M_it              = m.M[,t], 
                    D_m               = m.Dur, 
@@ -205,6 +197,26 @@ Microsimulation <- function(n.i, n.y, cyc.t, monitor,seed_n, df_char,Estimated_p
       # Tests to ensure that samplev is working 
       if(any(m.M[, t + 1] == "cardiovascular_gen" & m.M[, t ] == "cardiovascular")){ 
         stop("returning to state")}
+      
+      ### Move 20% to rad who had just progressed and stop chemo/targeted
+      # rad_switch <- (m.M[,t]=="pre_prog" & m.M[,t+1]=="prog1") | (m.M[,t]=="prog1" & m.M[,t+1]=="prog2")
+      # 
+      # # Identify indices of TRUE values
+      # true_indices <- which(rad_switch == TRUE)
+      # # Calculate 20% of these TRUE indices
+      # num_true_remain <- ceiling(0.20 * length(true_indices))
+      # # Randomly shuffle the TRUE indices
+      # shuffled_true_indices <- sample(true_indices)
+      # # Select the first 20% to remain TRUE
+      # indices_remain_true <- shuffled_true_indices[1:num_true_remain]
+      # # Create a new vector that sets all other TRUEs to FALSE
+      # rad_switch1 <- rad_switch  # Start with the original vector
+      # rad_switch1[-indices_remain_true] <- FALSE  # Set all except the chosen 20% to FALSE
+      # 
+      # RadIndc <- rad_switch1 & df_char$Radiation == 0 # indicated for Rad switch and never incurred Rad cost
+      # # Cost of radiation incurred at the switch to rad
+      # m.Costs.rad[RadIndc, t + 1] <- 7199.34 # value given by Petros on Teams
+      # df_char$Radiation[rad_switch1] <- 1 # record that patient has been switched to rad (has rad history)
       
       # updating if i've visited a state the Vis and Dur matrices
       for(j in v.n){
