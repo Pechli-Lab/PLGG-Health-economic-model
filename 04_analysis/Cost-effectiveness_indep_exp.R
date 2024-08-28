@@ -4,7 +4,7 @@ require(here)
 require(pryr)
 library(darthtools)
 
-scen <- "1d"
+scen <- "1a"
 
 # location of files, and output 
 loc_here <- paste0(here::here(),"/")
@@ -204,7 +204,7 @@ for(sim_num1 in torun1){
                          sim_numi         = sim_num, 
                          rri              = 0,
                          loc_out1         = loc_here_out,
-                         trt_duration     = 2,
+                         trt_duration     = 1,
                          combo            = TRUE)
   
   # # # Testing

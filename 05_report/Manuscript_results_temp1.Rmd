@@ -52,7 +52,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -61,7 +61,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -78,8 +78,8 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
-``` 
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
+```
 
 ```{r, out.width="100%"}
 plots <- create_trace(fileloc)
@@ -87,7 +87,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -104,8 +104,8 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
-``` 
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
+```
 
 ```{r, out.width="100%"}
 plots <- create_trace(fileloc)
@@ -113,7 +113,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -130,8 +130,8 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
-``` 
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
+```
 
 ```{r, out.width="100%"}
 plots <- create_trace(fileloc)
@@ -139,7 +139,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -156,8 +156,8 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
-``` 
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
+```
 
 ```{r, out.width="100%"}
 plots <- create_trace(fileloc)
@@ -165,7 +165,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -197,7 +197,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -206,7 +206,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -223,7 +223,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -232,7 +232,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -249,7 +249,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -258,7 +258,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -275,7 +275,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -284,7 +284,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -301,7 +301,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -310,7 +310,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -342,7 +342,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -351,7 +351,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -368,7 +368,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -377,7 +377,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -394,7 +394,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -403,7 +403,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -420,7 +420,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -429,7 +429,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -446,7 +446,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -455,7 +455,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -488,7 +488,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -497,7 +497,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -514,7 +514,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -523,7 +523,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -532,15 +532,15 @@ grid.arrange(plots$surv_plot1, plots$surv_plot2, plots$surv_plot3, nrow=3)
 
 # 0% discount rate
 
-## Scenario #1a 
+## Scenario #1a
 
 - Combo vs. chemo as first-line treatment
-- Lifetime duration of combo therapy 
-- 0% radiation at progression (Post-2014 SickKids data indicates that no patients who received chemo and progressed were radiated) 
+- Lifetime duration of combo therapy
+- 0% radiation at progression (Post-2014 SickKids data indicates that no patients who received chemo and progressed were radiated)
 - 100% combo price
-- Discount rate: 0 
-- Data source for controls & exposed: Investigator assessment - Bouffet et al., NEJM 2023. 
-- **Post-progression risk for subsequent progression = pre-progression risk for first progression in combo arm 
+- Discount rate: 0
+- Data source for controls & exposed: Investigator assessment - Bouffet et al., NEJM 2023.
+- **Post-progression risk for subsequent progression = pre-progression risk for first progression in combo arm
 - 10,000 individuals
 - 50 simulation runs
 
@@ -555,8 +555,8 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
-``` 
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
+```
 
 ```{r, out.width="100%"}
 plots <- create_trace(fileloc)
@@ -564,7 +564,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -581,8 +581,8 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
-``` 
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
+```
 
 ```{r, out.width="100%"}
 plots <- create_trace(fileloc)
@@ -590,7 +590,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -607,8 +607,8 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
-``` 
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
+```
 
 ```{r, out.width="100%"}
 plots <- create_trace(fileloc)
@@ -616,7 +616,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -633,8 +633,8 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
-``` 
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
+```
 
 ```{r, out.width="100%"}
 plots <- create_trace(fileloc)
@@ -642,7 +642,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -659,8 +659,8 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
-``` 
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
+```
 
 ```{r, out.width="100%"}
 plots <- create_trace(fileloc)
@@ -668,7 +668,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -700,7 +700,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -709,7 +709,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -726,7 +726,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -735,7 +735,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -752,7 +752,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -761,7 +761,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -778,7 +778,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -787,7 +787,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -804,7 +804,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -813,7 +813,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -845,7 +845,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -854,7 +854,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -871,7 +871,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -880,7 +880,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -897,7 +897,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -906,7 +906,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -923,7 +923,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -932,7 +932,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -949,7 +949,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -958,7 +958,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -991,7 +991,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -1000,7 +1000,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -1017,7 +1017,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -1026,7 +1026,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -1037,15 +1037,15 @@ grid.arrange(plots$surv_plot1, plots$surv_plot2, plots$surv_plot3, nrow=3)
 
 # 3% discount rate
 
-## Scenario #1a 
+## Scenario #1a
 
 - Combo vs. chemo as first-line treatment
-- Lifetime duration of combo therapy 
-- 0% radiation at progression (Post-2014 SickKids data indicates that no patients who received chemo and progressed were radiated) 
+- Lifetime duration of combo therapy
+- 0% radiation at progression (Post-2014 SickKids data indicates that no patients who received chemo and progressed were radiated)
 - 100% combo price
 - Discount rate: 3
-- Data source for controls & exposed: Investigator assessment - Bouffet et al., NEJM 2023. 
-- **Post-progression risk for subsequent progression = pre-progression risk for first progression in combo arm 
+- Data source for controls & exposed: Investigator assessment - Bouffet et al., NEJM 2023.
+- **Post-progression risk for subsequent progression = pre-progression risk for first progression in combo arm
 - 10,000 individuals
 - 50 simulation runs
 
@@ -1060,8 +1060,8 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
-``` 
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
+```
 
 ```{r, out.width="100%"}
 plots <- create_trace(fileloc)
@@ -1069,7 +1069,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -1086,8 +1086,8 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
-``` 
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
+```
 
 ```{r, out.width="100%"}
 plots <- create_trace(fileloc)
@@ -1095,7 +1095,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -1112,8 +1112,8 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
-``` 
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
+```
 
 ```{r, out.width="100%"}
 plots <- create_trace(fileloc)
@@ -1121,7 +1121,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -1138,8 +1138,8 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
-``` 
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
+```
 
 ```{r, out.width="100%"}
 plots <- create_trace(fileloc)
@@ -1147,7 +1147,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -1164,8 +1164,8 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
-``` 
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
+```
 
 ```{r, out.width="100%"}
 plots <- create_trace(fileloc)
@@ -1173,7 +1173,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -1205,7 +1205,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -1214,7 +1214,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -1231,7 +1231,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -1240,7 +1240,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -1257,7 +1257,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -1266,7 +1266,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -1283,7 +1283,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -1292,7 +1292,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -1309,7 +1309,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -1318,7 +1318,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -1350,7 +1350,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -1359,7 +1359,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -1376,7 +1376,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -1385,7 +1385,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -1402,7 +1402,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -1411,7 +1411,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -1428,7 +1428,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -1437,7 +1437,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -1454,7 +1454,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -1463,7 +1463,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -1496,7 +1496,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -1505,7 +1505,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -1522,7 +1522,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -1531,7 +1531,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -1542,15 +1542,15 @@ grid.arrange(plots$surv_plot1, plots$surv_plot2, plots$surv_plot3, nrow=3)
 
 # 20% radiated at subsequent progression
 
-## Scenario #1a 
+## Scenario #1a
 
 - Combo vs. chemo as first-line treatment
-- Lifetime duration of combo therapy 
+- Lifetime duration of combo therapy
 - 20% radiation at progression
 - 100% combo price
-- Discount rate: 1.5 
-- Data source for controls & exposed: Investigator assessment - Bouffet et al., NEJM 2023. 
-- **Post-progression risk for subsequent progression = pre-progression risk for first progression in combo arm 
+- Discount rate: 1.5
+- Data source for controls & exposed: Investigator assessment - Bouffet et al., NEJM 2023.
+- **Post-progression risk for subsequent progression = pre-progression risk for first progression in combo arm
 - 10,000 individuals
 - 50 simulation runs
 
@@ -1565,8 +1565,8 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
-``` 
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
+```
 
 ```{r, out.width="100%"}
 plots <- create_trace(fileloc)
@@ -1574,7 +1574,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -1591,8 +1591,8 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
-``` 
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
+```
 
 ```{r, out.width="100%"}
 plots <- create_trace(fileloc)
@@ -1600,7 +1600,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -1617,8 +1617,8 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
-``` 
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
+```
 
 ```{r, out.width="100%"}
 plots <- create_trace(fileloc)
@@ -1626,7 +1626,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -1643,8 +1643,8 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
-``` 
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
+```
 
 ```{r, out.width="100%"}
 plots <- create_trace(fileloc)
@@ -1652,7 +1652,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -1669,8 +1669,8 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
-``` 
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
+```
 
 ```{r, out.width="100%"}
 plots <- create_trace(fileloc)
@@ -1678,7 +1678,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -1710,7 +1710,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -1719,7 +1719,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -1736,7 +1736,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -1745,7 +1745,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -1762,7 +1762,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -1771,7 +1771,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -1788,7 +1788,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -1797,7 +1797,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -1814,7 +1814,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -1823,7 +1823,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -1836,7 +1836,7 @@ grid.arrange(plots$surv_plot1, plots$surv_plot2, plots$surv_plot3, nrow=3)
 
 - Combo vs. chemo as first-line treatment
 - Lifetime duration of combo therapy
-- 20% radiation at progression 
+- 20% radiation at progression
 - **75% combo price reduction**
 - Discount rate: 1.5
 - Data source for controls & exposed: Investigator assessment - Bouffet et al., NEJM 2023.
@@ -1855,7 +1855,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -1864,7 +1864,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -1881,7 +1881,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -1890,7 +1890,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -1907,7 +1907,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -1916,7 +1916,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -1933,7 +1933,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -1942,7 +1942,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -1959,7 +1959,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -1968,7 +1968,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -1981,7 +1981,7 @@ grid.arrange(plots$surv_plot1, plots$surv_plot2, plots$surv_plot3, nrow=3)
 
 - Combo vs. chemo as first-line treatment
 - Lifetime duration of combo therapy
-- 20% radiation at progression 
+- 20% radiation at progression
 - 100% combo price
 - Discount rate: 1.5
 - **Data source for controls: n=34 SickKids controls**
@@ -2001,7 +2001,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -2010,7 +2010,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -2027,7 +2027,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -2036,7 +2036,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -2047,15 +2047,15 @@ grid.arrange(plots$surv_plot1, plots$surv_plot2, plots$surv_plot3, nrow=3)
 
 # 2-year treatment duration - Basecase
 
-## Scenario #1a 
+## Scenario #1a
 
 - Combo vs. chemo as first-line treatment
-- Lifetime duration of combo therapy 
-- 0% radiation at progression (Post-2014 SickKids data indicates that no patients who received chemo and progressed were radiated) 
+- Lifetime duration of combo therapy
+- 0% radiation at progression (Post-2014 SickKids data indicates that no patients who received chemo and progressed were radiated)
 - 100% combo price
-- Discount rate: 1.5 
-- Data source for controls & exposed: Investigator assessment - Bouffet et al., NEJM 2023. 
-- **Post-progression risk for subsequent progression = pre-progression risk for first progression in combo arm 
+- Discount rate: 1.5
+- Data source for controls & exposed: Investigator assessment - Bouffet et al., NEJM 2023.
+- **Post-progression risk for subsequent progression = pre-progression risk for first progression in combo arm
 - 10,000 individuals
 - 50 simulation runs
 
@@ -2070,8 +2070,8 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
-``` 
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
+```
 
 ```{r, out.width="100%"}
 plots <- create_trace(fileloc)
@@ -2079,7 +2079,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -2096,8 +2096,8 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
-``` 
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
+```
 
 ```{r, out.width="100%"}
 plots <- create_trace(fileloc)
@@ -2105,7 +2105,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -2122,8 +2122,8 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
-``` 
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
+```
 
 ```{r, out.width="100%"}
 plots <- create_trace(fileloc)
@@ -2131,7 +2131,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -2148,8 +2148,8 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
-``` 
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
+```
 
 ```{r, out.width="100%"}
 plots <- create_trace(fileloc)
@@ -2157,7 +2157,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -2174,8 +2174,8 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
-``` 
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
+```
 
 ```{r, out.width="100%"}
 plots <- create_trace(fileloc)
@@ -2183,7 +2183,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -2215,7 +2215,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -2224,7 +2224,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -2241,7 +2241,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -2250,7 +2250,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -2267,7 +2267,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -2276,7 +2276,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -2293,7 +2293,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -2302,7 +2302,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -2319,7 +2319,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -2328,7 +2328,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -2360,7 +2360,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -2369,7 +2369,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -2386,7 +2386,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -2395,7 +2395,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -2412,7 +2412,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -2421,7 +2421,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -2438,7 +2438,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -2447,7 +2447,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -2464,7 +2464,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -2473,7 +2473,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -2506,7 +2506,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -2515,7 +2515,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}
@@ -2532,7 +2532,7 @@ res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
 ```
 
 ```{R}
-create_table(res_model)
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
 ```
 
 ```{r, out.width="100%"}
@@ -2541,7 +2541,7 @@ plots$trace_plot
 ```
 
 ```{r, out.width="100%"}
-grid.arrange(plots$ae_plot1, plots$ae_plot2, nrow=2)
+plots$ae_plot1
 ```
 
 ```{r, out.width="100%"}

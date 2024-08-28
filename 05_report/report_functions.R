@@ -109,8 +109,37 @@ create_table <- function(model_object) {
   tb2a$Variable <- factor(tb2a$Variable, levels = c("Life-years","QALY","Total Cost","Non-Targeted PLGG related costs",
                                                     "Late effect costs" ,"General population costs", 
                                                     "Targeted costs","Radiation costs"))
-  return(kable(tb2a, format="latex", booktabs=TRUE) %>% 
-           kable_styling(latex_options=c("scale_down","HOLD_position")))
+  
+  # CEAC
+  df_deltacea1 <- df_deltacea %>%
+    mutate(rr =factor(rr, levels = c(0,1), labels = c("No radiation benefit","Radiation benefit")),
+           type = "all")
+  df_means <- df_deltacea %>%
+    group_by(rr) %>%
+    summarise(Cost = mean(Cost),
+              QALY = mean(QALY)) %>%
+    mutate(type = "Mean Values") %>%
+    mutate(rr1 = factor(rr, levels = c(0,1), labels = c("No radiation benefit","Radiation benefit") ))
+  toplot_plane <-df_deltacea1 %>%
+    ggplot() +
+    geom_point(aes(x = QALY, y = Cost), alpha = 0.75 , size = 0.6) +
+    # geom_point(aes(x = QALY, y = Cost), color = "black", data = df_means,shape = 2,show.legend = TRUE, size = 3) +
+    geom_hline(yintercept = 0) +
+    geom_vline(xintercept = 0) +
+    theme_bw() +
+    theme(legend.title = element_blank()) +
+    labs(color = "", shape = "Mean",  
+         y="Discounted Total Costs",
+         x="Discounted QALYs",
+         title = "Cost-Effectiveness Acceptability Curve (CEAC)") +
+    scale_y_continuous(labels = dollar_format(prefix="$")) +
+    #facet_wrap(~ rr) +
+    theme( panel.grid.major = element_blank(),
+           panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"))
+  tablee <- kable(tb2a, format="latex", booktabs=TRUE) %>% 
+    kable_styling(latex_options=c("scale_down","HOLD_position"))
+  return(list(a=tablee,
+         b=toplot_plane))
 }
 
 create_trace <- function(fileloc) {
@@ -291,15 +320,16 @@ create_trace <- function(fileloc) {
   prop_long <- df_AE %>% select(cycle,auditory,cardiovascular,neurologic,stroke,visual,intervention) %>%
     tidyr::pivot_longer(-c(cycle,intervention), names_to = "state", values_to = "proportion") %>%
     mutate(cycle=cycle/12)
+  prop_long <- prop_long %>% mutate(intervention = ifelse(intervention == "SoC", "SoC = \nStandard Chemotherapy", "Targeted = \nDabrafenib-Trametinib"))
   ggplot(data = prop_long, aes(x = cycle, y = proportion, color = state, group = state)) +
     geom_line() +
     labs(title = "Cumulative Incidence of PLGG-related Late Effects Across Cycles",
-         x = "Year",
+         x = "Time from initiation of systemic therapy (Years)",
          y = "Proportion",
          color = "PLGG-related late effects") +
     theme_bw() +
-    scale_y_continuous(limits=c(0,0.3)) + 
-    theme(legend.position = "right", legend.text=element_text(size=6.5), legend.title=element_text(size=8.25),
+    scale_y_continuous(limits=c(0,0.15)) + 
+    theme(legend.position = "bottom", legend.text=element_text(size=6.5), legend.title=element_text(size=8.25),
           plot.title = element_text(size=11),axis.title.x=element_text(size=9.5), axis.title.y=element_text(size=9.5)) +
     facet_wrap(~intervention) -> b
   
@@ -317,7 +347,7 @@ create_trace <- function(fileloc) {
   ggplot(data = prop_long, aes(x = cycle, y = proportion, color = state, group = state)) +
     geom_line() +
     labs(title = "Cumulative Incidence of Background Late Effects Across Cycles",
-         x = "Year",
+         x = "Time from initiation of systemic therapy (Years)",
          y = "Proportion",
          color = "Background late effects") +
     theme_bw() +
@@ -328,24 +358,24 @@ create_trace <- function(fileloc) {
   
   ### SURVIVAL ###
   ## Overall
-  p_surv$intervention <- ifelse(p_surv$intervention == 1, "Targeted", "SoC")
+  p_surv$intervention <- ifelse(p_surv$intervention == 1, "Targeted = Dabrafenib-Trametinib", "SoC = Standard Chemotherapy")
   p_surv1 <- data.frame(avg = apply(p_surv %>% select(-cycle, -intervention), 1, mean),
                         lb = apply(p_surv %>% select(-cycle, -intervention), 1, function(x){quantile(x, 0.025)}),
                         ub = apply(p_surv %>% select(-cycle, -intervention), 1, function(x){quantile(x, 0.975)}))
   p_surv1$intervention <- p_surv$intervention
   p_surv1$cycle <- p_surv$cycle/12
   ggplot(p_surv1, aes(x = cycle)) +
-    geom_ribbon(aes(ymin = lb, ymax = ub), fill = "blue", alpha = 0.15) +  
-    geom_line(aes(y = avg), color = "blue") +  
-    labs(x = "Year", y = "Survival Probability", 
+    geom_ribbon(aes(ymin = lb, ymax = ub, fill = intervention), alpha = 0.15) +  
+    geom_line(aes(y = avg, color = intervention, linetype = intervention)) +  
+    labs(x = "Time from initiation of systemic therapy (Years)", y = "Survival Probability", 
          title = "Overall Survival with 95% CI") +
-    theme_bw() + facet_wrap(~intervention) + 
+    theme_bw() + #facet_wrap(~intervention) + 
     theme(plot.title = element_text(size=9),
           axis.title.x=element_text(size=8), axis.title.y=element_text(size=8), 
           axis.text.y=element_text(size=6.2)) -> d
   
   ## PLGG-related
-  p_surv_plgg$intervention <- ifelse(p_surv_plgg$intervention == 1, "Targeted", "SoC")
+  p_surv_plgg$intervention <- ifelse(p_surv_plgg$intervention == 1, "Targeted = Dabrafenib-Trametinib", "SoC = Standard Chemotherapy")
   p_surv_plgg1 <- data.frame(avg = apply(p_surv_plgg %>% select(-cycle, -intervention), 1, mean),
                              lb = apply(p_surv_plgg %>% 
                                           select(-cycle, -intervention), 1, function(x){quantile(x, 0.025)}),
@@ -354,17 +384,17 @@ create_trace <- function(fileloc) {
   p_surv_plgg1$intervention <- p_surv_plgg$intervention
   p_surv_plgg1$cycle <- p_surv_plgg$cycle/12
   ggplot(p_surv_plgg1, aes(x = cycle)) +
-    geom_ribbon(aes(ymin = lb, ymax = ub), fill = "blue", alpha = 0.15) +  
-    geom_line(aes(y = avg), color = "blue") +  
-    labs(x = "Year", y = "Survival Probability", 
+    geom_ribbon(aes(ymin = lb, ymax = ub, fill = intervention), alpha = 0.15) +  
+    geom_line(aes(y = avg, color = intervention, linetype = intervention)) +  
+    labs(x = "Time from initiation of systemic therapy (Years)", y = "Survival Probability", 
          title = "PLGG-death-related Survival with 95% CI") +
-    theme_bw() + facet_wrap(~intervention) +  
+    theme_bw() + #facet_wrap(~intervention) +  
     theme(plot.title = element_text(size=9), 
           axis.title.x=element_text(size=8), axis.title.y=element_text(size=8),
           axis.text.y=element_text(size=6.2))  -> e
   
   ## PFS
-  p_pfs$intervention <- ifelse(p_pfs$intervention == 1, "Targeted", "SoC")
+  p_pfs$intervention <- ifelse(p_pfs$intervention == 1, "Targeted = Dabrafenib-Trametinib", "SoC = Standard Chemotherapy")
   p_pfs1 <- data.frame(avg = apply(p_pfs %>% select(-cycle, -intervention), 1, mean),
                              lb = apply(p_pfs %>% 
                                           select(-cycle, -intervention), 1, function(x){quantile(x, 0.025)}),
@@ -373,11 +403,11 @@ create_trace <- function(fileloc) {
   p_pfs1$intervention <- p_pfs$intervention
   p_pfs1$cycle <- p_pfs$cycle/12
   ggplot(p_pfs1, aes(x = cycle)) +
-    geom_ribbon(aes(ymin = lb, ymax = ub), fill = "blue", alpha = 0.15) +  
-    geom_line(aes(y = avg), color = "blue") +  
-    labs(x = "Year", y = "Survival Probability", 
+    geom_ribbon(aes(ymin = lb, ymax = ub, fill = intervention), alpha = 0.15) +  
+    geom_line(aes(y = avg, color = intervention, linetype = intervention)) +  
+    labs(x = "Time from initiation of systemic therapy (Years)", y = "Survival Probability", 
          title = "Progression-Free Survival with 95% CI") +
-    theme_bw() + facet_wrap(~intervention) +  
+    theme_bw() + #facet_wrap(~intervention) +  
     theme(plot.title = element_text(size=9), 
           axis.title.x=element_text(size=8), axis.title.y=element_text(size=8),
           axis.text.y=element_text(size=6.2))  -> f
