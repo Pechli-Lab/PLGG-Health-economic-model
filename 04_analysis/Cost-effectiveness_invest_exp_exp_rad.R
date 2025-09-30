@@ -4,11 +4,12 @@ require(here)
 require(pryr)
 library(darthtools)
 
-scen <- "1a"
-
+scen <- "6a"
+i=0
+n_sim_per_core <- 100
 # location of files, and output 
 loc_here <- paste0(here::here(),"/")
-loc_here_out <- paste0(here::here(),"/04_analysis/output/scenarios/", scen,"/basecase exp lifetime investigator combo/")
+loc_here_out <- paste0(here::here(),"/04_analysis/output/scenarios/", scen,"/basecase exp exp lifetime rad combo/")
 
 # create folders in the location of the output
 dir.create(loc_here_out, recursive =T)
@@ -136,10 +137,9 @@ load(paste0(here::here("04_analysis","control scenarios","Bryans SickKids data")
 # plgg OS adjusted
 load(paste0(here::here("literature"),"/fitted_plgg_os_adjust_exp_100.RData")) # prog1 to death
 
-
 ## Global Parameters
-N_sim0 <- 901
-N_sim1 <- 1000
+N_sim0 <- 1 + i*n_sim_per_core
+N_sim1 <- (i+1)*n_sim_per_core
 torun1 <- N_sim0:N_sim1
 
 start.time <- Sys.time()
@@ -182,7 +182,7 @@ for(sim_num1 in torun1){
   seed_n.g  <- 1
   df_char_g <- gen_synpop(n1 = 10000)
   
-  df_char_g$Radiation <- 0
+  #df_char_g$Radiation <- rbinom(10000,1, 0.2)
   n.i_g <- dim(df_char_g)[1]         # number of individuals        
   
   ## assuming no benefit to radiation 
@@ -201,7 +201,7 @@ for(sim_num1 in torun1){
                          rad_benefit      = rad_benefit_flex,
                          util_input       = Util_i, 
                          uindx            = 1, 
-                         d.c              = 0.015/12, # 0.015/12 = 1.5% annual discount rate, to monthly
+                         d.c              = 0.015/12, # 0/12 = 0% annual discount rate, to monthly
                          d.e              = 0.015/12,
                          sim_numi         = sim_num, 
                          rri              = 0,
@@ -262,8 +262,6 @@ for(sim_num1 in torun1){
 }
 #362, 432
 Time.elapsed <- Sys.time()-start.time
-
-
 
 
 

@@ -4,11 +4,12 @@ require(here)
 require(pryr)
 library(darthtools)
 
-scen <- "1a"
-
+scen <- "3b"
+i=4
+n_sim_per_core <- 200
 # location of files, and output 
 loc_here <- paste0(here::here(),"/")
-loc_here_out <- paste0(here::here(),"/04_analysis/output/scenarios/", scen,"/basecase exp lifetime investigator combo/")
+loc_here_out <- paste0(here::here(),"/04_analysis/output/scenarios/", scen,"/basecase exp exp lifetime discount combo/")
 
 # create folders in the location of the output
 dir.create(loc_here_out, recursive =T)
@@ -94,7 +95,7 @@ PrMortCardio_mat1 <- MortCardio_est(est_par =readRDS(paste0(loc_here,"02_data/Ca
                                     cycleinyear = 12)
 
 # Costs inputs
-cost_input.l <- gen_costs(disct=0)
+cost_input.l <- gen_costs(disct=0.75)
 
 Utils <- read.csv(file = paste0(loc_here,"02_data/Utilities_CochranSE.csv"),row.names = 1)
 
@@ -124,7 +125,7 @@ load(paste0(here::here("04_analysis","control scenarios","Erics firstline RCT"),
 #load(paste0(here::here("04_analysis","control scenarios","Erics firstline RCT"),"/fitted_PFS_control_firstline_investigator_lnorm_100.RData")) # pre-prog to prog1
 
 # Independent reviewer
-#load(paste0(here::here("04_analysis","control scenarios","Erics firstline RCT"),"/fitted_PFS_control_firstline_lnorm_100.RData")) # pre-prog to prog1
+load(paste0(here::here("04_analysis","control scenarios","Erics firstline RCT"),"/fitted_PFS_control_firstline_lnorm_100.RData")) # pre-prog to prog1
 
 # SickKids (control arm, match with only independent reviewer targeted)
 #load(paste0(here::here("04_analysis","control scenarios","Bryans SickKids data firstline"),"/fitted_PFS_control_sk_firstline_exp_100.RData")) # pre-prog to prog 1     
@@ -136,10 +137,9 @@ load(paste0(here::here("04_analysis","control scenarios","Bryans SickKids data")
 # plgg OS adjusted
 load(paste0(here::here("literature"),"/fitted_plgg_os_adjust_exp_100.RData")) # prog1 to death
 
-
 ## Global Parameters
-N_sim0 <- 901
-N_sim1 <- 1000
+N_sim0 <- 1 + i*n_sim_per_core
+N_sim1 <- (i+1)*n_sim_per_core
 torun1 <- N_sim0:N_sim1
 
 start.time <- Sys.time()
@@ -262,8 +262,6 @@ for(sim_num1 in torun1){
 }
 #362, 432
 Time.elapsed <- Sys.time()-start.time
-
-
 
 
 

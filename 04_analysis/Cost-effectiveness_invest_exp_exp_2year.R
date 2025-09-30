@@ -4,11 +4,12 @@ require(here)
 require(pryr)
 library(darthtools)
 
-scen <- "1a"
-
+scen <- "4a"
+i=4
+n_sim_per_core <- 200
 # location of files, and output 
 loc_here <- paste0(here::here(),"/")
-loc_here_out <- paste0(here::here(),"/04_analysis/output/scenarios/", scen,"/basecase exp lifetime investigator combo/")
+loc_here_out <- paste0(here::here(),"/04_analysis/output/scenarios/", scen,"/basecase exp 2year investigator combo/")
 
 # create folders in the location of the output
 dir.create(loc_here_out, recursive =T)
@@ -138,8 +139,8 @@ load(paste0(here::here("literature"),"/fitted_plgg_os_adjust_exp_100.RData")) # 
 
 
 ## Global Parameters
-N_sim0 <- 901
-N_sim1 <- 1000
+N_sim0 <- 1 + i*n_sim_per_core
+N_sim1 <- (i+1)*n_sim_per_core
 torun1 <- N_sim0:N_sim1
 
 start.time <- Sys.time()
@@ -206,7 +207,7 @@ for(sim_num1 in torun1){
                          sim_numi         = sim_num, 
                          rri              = 0,
                          loc_out1         = loc_here_out,
-                         trt_duration     = 1,
+                         trt_duration     = 2,
                          combo            = TRUE)
   
   # # # Testing

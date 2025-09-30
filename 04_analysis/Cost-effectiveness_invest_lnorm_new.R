@@ -4,11 +4,11 @@ require(here)
 require(pryr)
 library(darthtools)
 
-scen <- "1a"
+scen <- "1b"
 
 # location of files, and output 
 loc_here <- paste0(here::here(),"/")
-loc_here_out <- paste0(here::here(),"/04_analysis/output/scenarios/", scen,"/basecase exp lifetime investigator combo/")
+loc_here_out <- paste0(here::here(),"/04_analysis/output/scenarios/", scen,"/basecase lnorm lifetime investigator combo/")
 
 # create folders in the location of the output
 dir.create(loc_here_out, recursive =T)
@@ -111,8 +111,8 @@ k1 <- fun_genRadBenefit(dig_radbenefit =dig_radbenefit1, deter =T)
 ### Survival curves
 ## Targeted
 # Investigator assessment
-load(paste0(here::here("04_analysis","control scenarios","Erics firstline RCT"),"/fitted_PFS_targeted_firstline_investigator_exp_100.RData")) # pre-prog to prog1
-#load(paste0(here::here("04_analysis","control scenarios","Erics firstline RCT"),"/fitted_PFS_targeted_firstline_investigator_lnorm_100.RData")) 
+#load(paste0(here::here("04_analysis","control scenarios","Erics firstline RCT"),"/fitted_PFS_targeted_firstline_investigator_exp_100.RData")) # pre-prog to prog1
+load(paste0(here::here("04_analysis","control scenarios","Erics firstline RCT"),"/fitted_PFS_targeted_firstline_investigator_lnorm_100.RData")) 
 
 # Independent reviewer
 #load(paste0(here::here("04_analysis","control scenarios","Erics firstline RCT"),"/fitted_PFS_targeted_firstline_exp_100.RData")) # pre-prog to prog1
@@ -120,8 +120,8 @@ load(paste0(here::here("04_analysis","control scenarios","Erics firstline RCT"),
 
 ## Control 
 # Investigator assessment
-load(paste0(here::here("04_analysis","control scenarios","Erics firstline RCT"),"/fitted_PFS_control_firstline_investigator_exp_100.RData")) # pre-prog to prog1
-#load(paste0(here::here("04_analysis","control scenarios","Erics firstline RCT"),"/fitted_PFS_control_firstline_investigator_lnorm_100.RData")) # pre-prog to prog1
+#load(paste0(here::here("04_analysis","control scenarios","Erics firstline RCT"),"/fitted_PFS_control_firstline_investigator_exp_100.RData")) # pre-prog to prog1
+load(paste0(here::here("04_analysis","control scenarios","Erics firstline RCT"),"/fitted_PFS_control_firstline_investigator_lnorm_100.RData")) # pre-prog to prog1
 
 # Independent reviewer
 #load(paste0(here::here("04_analysis","control scenarios","Erics firstline RCT"),"/fitted_PFS_control_firstline_lnorm_100.RData")) # pre-prog to prog1
@@ -138,8 +138,8 @@ load(paste0(here::here("literature"),"/fitted_plgg_os_adjust_exp_100.RData")) # 
 
 
 ## Global Parameters
-N_sim0 <- 901
-N_sim1 <- 1000
+N_sim0 <- 201
+N_sim1 <- 300
 torun1 <- N_sim0:N_sim1
 
 start.time <- Sys.time()

@@ -1,4 +1,4 @@
-create_table <- function(model_object) {
+create_table <- function(model_object, adj=F, wtp=700000) {
   res_model <- model_object
   
   # turning into dataframe
@@ -17,9 +17,33 @@ create_table <- function(model_object) {
     select(-key)
   
   df_output <- df_model %>% filter(discount == 1) %>% select(-rr)
+  df_c <- df_output %>% filter(Variable=="Cost" & Type == "Total") %>% select(intervention, Value)
+  df_c <- df_c %>%
+    mutate(group_id = rep(1:(n() / 2), each = 2))
+  df_c <- df_c %>%
+    pivot_wider(
+      names_from = intervention, 
+      values_from = Value,
+    ) %>%
+   select(-group_id)
+  
+  df_e <- df_output %>% filter(Variable=="QALY" & Type == "QALY") %>% select(intervention, Value)
+  df_e <- df_e %>%
+    mutate(group_id = rep(1:(n() / 2), each = 2))
+  df_e <- df_e %>%
+    pivot_wider(
+      names_from = intervention, 
+      values_from = Value,
+    ) %>%
+    select(-group_id)
+  
+  v_names_str <- names(df_e)
+  
   # df_output$intervention[df_output$intervention == "SoC"] <- "Targeted"
   df_output1 <- df_output %>% group_by(Variable, Type) %>% summarise(Mean = mean(Value))
   #write.csv(df_output1, "output.csv", row.names = F)
+  
+  df_model <- df_model[!duplicated(df_model),]
   
   df_delta <- df_model %>% 
     spread(intervention, Value) %>%   
@@ -78,8 +102,6 @@ create_table <- function(model_object) {
   df_model3 <- df_model2 %>% 
     arrange(subset, rr, Variable, Type, discount )
   
-  
-  
   tb2 <-df_model3  %>%
     filter(subset == "all") %>% 
     filter( !(Variable == "Cost" & discount == 0),
@@ -120,26 +142,30 @@ create_table <- function(model_object) {
               QALY = mean(QALY)) %>%
     mutate(type = "Mean Values") %>%
     mutate(rr1 = factor(rr, levels = c(0,1), labels = c("No radiation benefit","Radiation benefit") ))
-  toplot_plane <-df_deltacea1 %>%
-    ggplot() +
-    geom_point(aes(x = QALY, y = Cost), alpha = 0.75 , size = 0.6) +
-    # geom_point(aes(x = QALY, y = Cost), color = "black", data = df_means,shape = 2,show.legend = TRUE, size = 3) +
-    geom_hline(yintercept = 0) +
-    geom_vline(xintercept = 0) +
-    theme_bw() +
-    theme(legend.title = element_blank()) +
-    labs(color = "", shape = "Mean",  
-         y="Discounted Total Costs",
-         x="Discounted QALYs",
-         title = "Cost-Effectiveness Acceptability Curve (CEAC)") +
-    scale_y_continuous(labels = dollar_format(prefix="$")) +
-    #facet_wrap(~ rr) +
-    theme( panel.grid.major = element_blank(),
-           panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"))
+  
+  
+  
+  ### Create PSA object 
+  l_psa <- make_psa_obj(cost          = df_c, 
+                        effectiveness = df_e, 
+                        strategies    = v_names_str)
+  l_psa$strategies <- v_names_str
+  colnames(l_psa$effectiveness) <- v_names_str
+  colnames(l_psa$cost) <- v_names_str
+  
+  # Vector with willingness-to-pay (WTP) thresholds.
+  v_wtp <- seq(0, wtp, by = 100000)
+  ceac_obj <- ceac(wtp = v_wtp, psa = l_psa)
+  gg_ceac <- plot_ceac(ceac_obj, txtsize = 10, xlim = c(0, NA), n_x_ticks = 14) +
+    ggthemes::scale_color_colorblind() +
+    ggthemes::scale_fill_colorblind() +
+    theme(legend.position = c(0.8, 0.48))
+  
+  
   tablee <- kable(tb2a, format="latex", booktabs=TRUE) %>% 
     kable_styling(latex_options=c("scale_down","HOLD_position"))
   return(list(a=tablee,
-         b=toplot_plane))
+              b=gg_ceac))
 }
 
 create_trace <- function(fileloc) {
@@ -178,13 +204,20 @@ create_trace <- function(fileloc) {
       prop_df_i  <- map_df(l_prop_df[i], readRDS) 
       prop_df_i$cycle <- as.numeric(prop_df_i$cycle)
       prop_df_i$intervention <- ifelse(prop_df_i$intervention == "Targeted", 1, 0)
-      prop_df_i <- prop_df_i %>% dplyr::select("cycle", "pre_prog", "auditory", "cardiovascular", "death_outside", 
-                                               "death_plgg", "neurologic", "prog1", "SN", "stroke", "visual", "death_cardio",
-                                               "prog2", "SN_gen", "death_SN", "death_stroke", "cardiovascular_gen",
-                                               "stroke_gen", "intervention")
+  
+      col_sel <- c("cycle", "pre_prog", "auditory", "cardiovascular", "death_outside", 
+                   "death_plgg", "neurologic", "prog1", "SN", "stroke", "visual", "death_cardio",
+                   "prog2", "SN_gen", "death_SN", "death_stroke", "cardiovascular_gen",
+                   "stroke_gen", "intervention")
+      prop_df_i <- prop_df_i %>% dplyr::select(any_of(col_sel))
       prop_df_i <- apply(prop_df_i,2,as.numeric)
       prop_df_i <- as.data.frame(prop_df_i)
-      prop_df <- prop_df + prop_df_i
+      for (jj in 1:ncol(prop_df)){
+         if(colnames(prop_df)[jj] %in% colnames(prop_df_i)){
+           prop_df[,jj] <-  prop_df[,jj]+prop_df_i[,colnames(prop_df)[jj]]
+             }else{
+               prop_df[,jj]<- prop_df[,jj]}
+      }
       # calculate overall survival
       p_death_i <- prop_df_i$death_outside + prop_df_i$death_cardio + prop_df_i$death_SN + prop_df_i$death_stroke +
                    prop_df_i$death_plgg
@@ -227,7 +260,7 @@ create_trace <- function(fileloc) {
     #geom_hline(yintercept=0.4, linetype="dashed", color = "purple") +
     #geom_vline(xintercept=25, linetype="dashed", color = "purple") +
     theme_bw() +
-    theme(legend.position = "bottom", legend.title=element_text(size=10), legend.text=element_text(size=7)) + 
+    theme(legend.position = "bottom", legend.title=element_text(size=9), legend.text=element_text(size=6.2)) + 
     facet_wrap(~intervention) -> a
   
   ### AE ###

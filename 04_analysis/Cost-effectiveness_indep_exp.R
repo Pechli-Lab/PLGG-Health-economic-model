@@ -8,10 +8,10 @@ scen <- "1a"
 
 # location of files, and output 
 loc_here <- paste0(here::here(),"/")
-loc_here_out <- paste0(here::here(),"/04_analysis/output/")
+loc_here_out <- paste0(here::here(),"/04_analysis/output/scenarios/", scen,"/basecase exp lifetime combo/")
 
 # create folders in the location of the output
-dir.create(loc_here_out)
+dir.create(loc_here_out, recursive = T)
 dir.create(paste0(loc_here_out,"res_rad"))
 dir.create(paste0(loc_here_out,"res_model"))
 dir.create(paste0(loc_here_out,"res_OS"))
@@ -94,7 +94,7 @@ PrMortCardio_mat1 <- MortCardio_est(est_par =readRDS(paste0(loc_here,"02_data/Ca
                                     cycleinyear = 12)
 
 # Costs inputs
-cost_input.l <- gen_costs()
+cost_input.l <- gen_costs(disct=0)
 
 Utils <- read.csv(file = paste0(loc_here,"02_data/Utilities_CochranSE.csv"),row.names = 1)
 
@@ -138,7 +138,7 @@ load(paste0(here::here("literature"),"/fitted_plgg_os_adjust_exp_100.RData")) # 
 
 
 ## Global Parameters
-N_sim <- 50
+N_sim <- 1000
 torun1 <- 1:N_sim
 
 start.time <- Sys.time()
@@ -169,11 +169,12 @@ for(sim_num1 in torun1){
   Util_i <- gen_Effects(deter = F,  beta_Utils =df_beta_Utils)
   
   # Bootstrap sampling with replacement from Liana's paper's PFS swimmer plot data
-  Estimated_plgg1$flexobj[[2]][1][[1]]  <- fitted_PFS_targeted[[sim_num1]]  # preprog to prog1, targeted
+  sim_num2 <- sample(1:100, size=1, replace=T)
+  Estimated_plgg1$flexobj[[2]][1][[1]]  <- fitted_PFS_targeted[[sim_num2]]  # preprog to prog1, targeted
   Estimated_plgg1 <- rbind(Estimated_plgg1, Estimated_plgg1[1,])
-  Estimated_plgg1$flexobj[[11]][1][[1]] <- fitted_PFS_chemo[[sim_num1]]     # preprog to prog1, control
-  Estimated_plgg1$flexobj[[10]][1][[1]] <- fitted_PFS_chemo_sk[[sim_num1]]  # prog1 to prog2, both arms
-  Estimated_plgg1$flexobj[[4]][1][[1]]  <- fitted_os_adjusted[[sim_num1]]   # prog1 to death, both arms
+  Estimated_plgg1$flexobj[[11]][1][[1]] <- fitted_PFS_chemo[[sim_num2]]     # preprog to prog1, control
+  Estimated_plgg1$flexobj[[10]][1][[1]] <- fitted_PFS_chemo_sk[[sim_num2]]  # prog1 to prog2, both arms
+  Estimated_plgg1$flexobj[[4]][1][[1]]  <- fitted_os_adjusted[[sim_num2]]   # prog1 to death, both arms
   
   n.y_g     <- 80             # time horizon, 80 years
   cyc.t_g   <- 1/12           # cycle length 
@@ -235,7 +236,7 @@ for(sim_num1 in torun1){
   
   for( i in seq_along(qr1)){
     #saveRDS(qr1[[i]], paste0(loc_here_out, names(qr1)[i], "/", "model_", sim_num, "_RR_0.RDS" ))
-    saveRDS(qr1[[i]], paste0(loc_here_out, "scenarios/", scen, "/basecase exp lifetime combo/", names(qr1)[i], "/", "model_", sim_num, "_RR_0.RDS" ))
+    saveRDS(qr1[[i]], paste0(loc_here_out, names(qr1)[i], "/", "model_", sim_num, "_RR_0.RDS" ))
   }
 
   rm(qr1)
@@ -256,11 +257,14 @@ for(sim_num1 in torun1){
   # }
   # rm(qr2)
   # message(paste0( "run:",  floor(sim_num / 100), "percent:"  ,round(sim_num1/100, digits = 2)))
-  
+ print(sim_num)
+ Sys.time()-start.time
 }
+
 Time.elapsed <- Sys.time()-start.time
 
 
+#todo post process results to convert to USD
 
 
 

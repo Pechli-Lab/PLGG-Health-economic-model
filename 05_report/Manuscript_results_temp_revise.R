@@ -1,0 +1,261 @@
+---
+  title: "Manuscript Results"
+output:
+  html_document: default
+pdf_document: default
+word_document: default
+---
+  
+  ```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, warning=F, message=F)
+#rm(list = ls())
+options(scipen=999)
+```
+
+```{r required packages}
+require(tidyverse)    # for data manipulation
+require(formattable)  # for formatting tables
+require(knitr)        # for saving tables
+require(scales)       # for ggplot axis labels
+library(gridExtra)    # for gridded plots 
+require(survival)     # for survival analysis
+require(survminer)    # for survival plotting
+require(kableExtra)
+require(dampack)
+require(darthtools)
+index <- c(1:1000)
+nn <- length(index)
+loc_here <- paste0(here::here(),"/")
+source(paste0(loc_here,"05_report/report_functions.R"))
+```
+
+# Base case
+
+## Scenario #1a
+
+-   Combo vs. chemo as first-line treatment
+-   Lifetime duration of combo therapy
+-   0% radiation at progression (Post-2014 SickKids data indicates that no patients who received chemo and progressed were radiated)
+-   100% combo price
+-   Discount rate: 1.5
+-   Data source for controls & exposed: Investigator assessment - Bouffet et al., NEJM 2023.
+-   \*\*Post-progression risk for subsequent progression = pre-progression risk for first progression in combo arm
+-   10,000 individuals
+-   1000 simulation runs
+
+\newpage
+
+### Investigator assessment, Targeted curve – Exponential, SoC curve – Exponential
+
+```{r}
+scen <- paste0("1a")
+fileloc <- here::here("04_analysis","output","scenarios",scen, "basecase exp lifetime investigator combo")
+res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
+```
+
+```{R}
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
+```
+
+```{r, out.width="100%"}
+plots <- create_trace(fileloc = fileloc)
+plots$trace_plot
+```
+
+```{r, out.width="100%"}
+plots$ae_plot1
+```
+
+```{r, out.width="100%"}
+grid.arrange(plots$surv_plot1, plots$surv_plot2, plots$surv_plot3, nrow=3)
+```
+
+\newpage
+
+### Investigator assessment, Targeted curve – Log-Normal, SoC curve – Log-Normal
+
+```{r}
+scen ="1b"
+fileloc <- here::here("04_analysis","output","scenarios",scen, "basecase lnorm lifetime investigator combo")
+res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
+```
+
+```{R}
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
+```
+
+```{r, out.width="100%"}
+plots <- create_trace(fileloc)
+plots$trace_plot
+```
+
+```{r, out.width="100%"}
+plots$ae_plot1
+```
+
+```{r, out.width="100%"}
+grid.arrange(plots$surv_plot1, plots$surv_plot2, plots$surv_plot3, nrow=3)
+```
+
+\newpage
+
+### Investigator assessment, Targeted curve – Log-Normal, SoC curve – Exponential
+
+```{r}
+scen ="1c"
+
+fileloc <- here::here("04_analysis","output","scenarios",scen, "basecase lnorm exp lifetime investigator combo")
+res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
+```
+
+```{R}
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
+```
+
+```{r, out.width="100%"}
+plots <- create_trace(fileloc)
+plots$trace_plot
+```
+
+```{r, out.width="100%"}
+plots$ae_plot1
+```
+
+```{r, out.width="100%"}
+grid.arrange(plots$surv_plot1, plots$surv_plot2, plots$surv_plot3, nrow=3)
+```
+
+\newpage
+
+### Independent reviewer, Targeted curve – Exponential, SoC curve – exponential
+
+```{r}
+scen ="1d"
+
+fileloc <- here::here("04_analysis","output","scenarios",scen, "basecase exp lifetime combo")
+res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
+```
+
+```{R}
+create_table(res_model, wtp=600000)[[1]]; create_table(res_model, wtp=600000)[[2]]
+```
+
+```{r, out.width="100%"}
+plots <- create_trace(fileloc)
+plots$trace_plot
+```
+
+```{r, out.width="100%"}
+plots$ae_plot1
+```
+
+```{r, out.width="100%"}
+grid.arrange(plots$surv_plot1, plots$surv_plot2, plots$surv_plot3, nrow=3)
+```
+
+\newpage
+
+### Independent reviewer, Targeted curve – Log-Normal, SoC curve – Log-Normal
+
+```{r}
+index = 1:950
+nn <- length(index)
+
+scen ="1e"
+
+fileloc <- here::here("04_analysis","output","scenarios",scen, "basecase lnorm lnorm lifetime combo")
+res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
+```
+
+```{R}
+create_table(res_model, wtp=500000)[[1]]; create_table(res_model, wtp=500000)[[2]]
+```
+
+```{r, out.width="100%"}
+plots <- create_trace(fileloc = fileloc)
+plots$trace_plot
+```
+
+```{r, out.width="100%"}
+plots$ae_plot1
+```
+
+```{r, out.width="100%"}
+grid.arrange(plots$surv_plot1, plots$surv_plot2, plots$surv_plot3, nrow=3)
+```
+
+\newpage
+
+## Scenario #1c
+
+-   Combo vs. chemo as first-line treatment
+-   Lifetime duration of combo therapy
+-   0% radiation at progression (Post-2014 SickKids data indicates that no patients who received chemo and progressed were radiated)
+-   **50% combo price reduction**
+  -   Discount rate: 1.5
+-   Data source for controls & exposed: Investigator assessment - Bouffet et al., NEJM 2023.
+-   \*\*Post-progression risk for subsequent progression = pre-progression risk for first progression in combo arm
+-   10,000 individuals
+-   50 simulation runs
+
+\newpage
+
+### Investigator assessment, Targeted curve – Lognormal, SoC curve – Lognormal
+
+```{r}
+index = 1:900
+nn <- length(index)
+
+scen ="2a"
+
+fileloc <- here::here("04_analysis","output","scenarios",scen, "basecase exp exp lifetime discount combo")
+res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
+```
+
+```{R}
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
+```
+
+```{r, out.width="100%"}
+plots <- create_trace(fileloc)
+plots$trace_plot
+```
+
+```{r, out.width="100%"}
+plots$ae_plot1
+```
+
+```{r, out.width="100%"}
+grid.arrange(plots$surv_plot1, plots$surv_plot2, plots$surv_plot3, nrow=3)
+```
+
+\newpage
+
+### Investigator assessment, Targeted curve – lognormal, SoC curve – lognormal
+
+```{r}
+index = 1:1000
+scen ="2b"
+
+fileloc <- here::here("04_analysis","output","scenarios",scen, "basecase lnorm lnorm lifetime discount combo")
+res_model <- list.files(paste0(fileloc, "/res_model"),full.names = TRUE)[index]
+```
+
+```{R}
+create_table(res_model)[[1]]; create_table(res_model)[[2]]
+```
+
+```{r, out.width="100%"}
+plots <- create_trace(fileloc)
+plots$trace_plot
+```
+
+```{r, out.width="100%"}
+plots$ae_plot1
+```
+
+```{r, out.width="100%"}
+grid.arrange(plots$surv_plot1, plots$surv_plot2, plots$surv_plot3, nrow=3)
+```
+
+\newpage
